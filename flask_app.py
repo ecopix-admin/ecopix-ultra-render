@@ -6,7 +6,7 @@ import threading
 import os
 
 # --- AYARLAR ---
-API_TOKEN = '8682822347:AAFhUbyi0bOUXfSHQL0mEoZJGXn_Tl9ncjY'
+API_TOKEN = '8682822347:AAGeoo5wc8idiebNwzwvzJvKaaqoDgG4MIs'
 AD_LINK = "https://www.profitablecpmratenetwork.com/caarhipxw?key=a23c49e3b1a0789535a6b848d7a66c9f"
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
