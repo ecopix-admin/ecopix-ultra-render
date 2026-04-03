@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* TikTok kimi tam ekran sürüşdürmə effekti */
         body, html {
             margin: 0;
             padding: 0;
@@ -18,39 +17,41 @@
         .video-container {
             height: 100vh;
             overflow-y: scroll;
-            scroll-snap-type: y mandatory; /* Yuxarı-aşağı sürüşdürməni məcburi edir */
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none; /* Firefox üçün skrolu gizlət */
         }
+        .video-container::-webkit-scrollbar { display: none; } /* Chrome üçün skrolu gizlət */
+
         .video-section {
             height: 100vh;
-            scroll-snap-align: start; /* Hər video tam ekranda dayanır */
+            scroll-snap-align: start;
             position: relative;
         }
         video {
-            object-fit: cover; /* Videonu tam ekrana sığdırır */
+            object-fit: cover;
             width: 100%;
             height: 100%;
         }
-        /* Mətnin arxasındakı qara kölgə (oxunaqlıq üçün) */
         .gradient-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             pointer-events: none;
         }
-        /* Məhsul Məlumat Pəncərəsi (Modal) */
-        .modal {
-            display: none;
+        /* MODALIN DÜZƏLİŞİ */
+        #infoModal {
+            display: none; /* İlkin olaraq gizli */
             position: fixed;
-            z-index: 100;
+            z-index: 9999; /* Hər şeyin üstündə durması üçün */
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            overflow-y: auto;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
@@ -59,214 +60,121 @@
     <div class="video-container" id="videoContainer">
 
         <div class="video-section">
-            <video loop muted playsinline id="video1">
+            <video loop muted playsinline>
                 <source src="https://assets.mixkit.co/videos/preview/mixkit-holding-a-smartphone-with-a-blue-screen-34446-large.mp4" type="video/mp4">
             </video>
             <div class="gradient-overlay"></div>
             
             <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart hover:text-red-500 cursor-pointer"></i>
+                <i class="fas fa-heart"></i>
                 <span class="text-sm">1.2k</span>
-                <i class="fas fa-share hover:text-blue-500 cursor-pointer"></i>
+                <i class="fas fa-share"></i>
                 <span class="text-sm">340</span>
             </div>
 
-            <div class="absolute bottom-20 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 text-white font-bold px-4 py-2 rounded-full inline-block text-xl mb-3 shadow-lg">
-                    1450 AZN
-                </div>
-                <h2 class="text-2xl font-bold mb-1">iPhone 13 Pro Max - 256GB</h2>
-                <p class="text-sm opacity-90 line-clamp-2">İdeal vəziyyətdə, cızığı yoxdur. Qutusu və aksesuarları tamdır. Pil 92%.</p>
-                <button onclick="openModal('elan1')" class="mt-4 bg-white text-black px-6 py-2 rounded-lg font-bold shadow-md w-full">
-                    Ətraflı Məlumat <i class="fas fa-chevron-right ml-2"></i>
-                </button>
+            <div class="absolute bottom-24 left-4 text-white w-3/4 p-4 z-10">
+                <div class="bg-green-600 px-4 py-1 rounded-full inline-block text-lg font-bold mb-2">1450 AZN</div>
+                <h2 class="text-xl font-bold">iPhone 13 Pro Max</h2>
+                <p class="text-sm opacity-80">İdeal vəziyyətdə, cızığı yoxdur.</p>
+                <button onclick="openModal('elan1')" class="mt-3 bg-white text-black px-6 py-2 rounded-lg font-bold w-full">Ətraflı Bax</button>
             </div>
         </div>
 
         <div class="video-section">
-            <video loop muted playsinline id="video2">
+            <video loop muted playsinline>
                 <source src="https://assets.mixkit.co/videos/preview/mixkit-running-shoes-in-slow-motion-42666-large.mp4" type="video/mp4">
             </video>
             <div class="gradient-overlay"></div>
             
             <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart hover:text-red-500"></i>
+                <i class="fas fa-heart"></i>
                 <span class="text-sm">890</span>
-                <i class="fas fa-share hover:text-blue-500"></i>
+                <i class="fas fa-share"></i>
                 <span class="text-sm">120</span>
             </div>
 
-            <div class="absolute bottom-20 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 text-white font-bold px-4 py-2 rounded-full inline-block text-xl mb-3 shadow-lg">
-                    180 AZN
-                </div>
-                <h2 class="text-2xl font-bold mb-1">Nike Air Max 270 - Orijinal</h2>
-                <p class="text-sm opacity-90 line-clamp-2">Ölçü 43. Cəmi 2 dəfə geyinilib, ayağıma sıxdığı üçün satıram.</p>
-                <button onclick="openModal('elan2')" class="mt-4 bg-white text-black px-6 py-2 rounded-lg font-bold shadow-md w-full">
-                    Ətraflı Məlumat <i class="fas fa-chevron-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="video-section">
-            <video loop muted playsinline id="video3">
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-sport-car-driving-through-a-mountain-road-21919-large.mp4" type="video/mp4">
-            </video>
-            <div class="gradient-overlay"></div>
-            
-            <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart hover:text-red-500"></i>
-                <span class="text-sm">4.5k</span>
-                <i class="fas fa-share hover:text-blue-500"></i>
-                <span class="text-sm">1.1k</span>
-            </div>
-
-            <div class="absolute bottom-20 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 text-white font-bold px-4 py-2 rounded-full inline-block text-xl mb-3 shadow-lg">
-                    22 000 AZN
-                </div>
-                <h2 class="text-2xl font-bold mb-1">BMW E60 535D M Tech</h2>
-                <p class="text-sm opacity-90 line-clamp-2">İli 2008. Tam full komplektasiya. M5 yığılıb. Motor karobka ideal.</p>
-                <button onclick="openModal('elan3')" class="mt-4 bg-white text-black px-6 py-2 rounded-lg font-bold shadow-md w-full">
-                    Ətraflı Məlumat <i class="fas fa-chevron-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="video-section">
-            <video loop muted playsinline id="video4">
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-set-of-earphones-with-a-charging-case-33431-large.mp4" type="video/mp4">
-            </video>
-            <div class="gradient-overlay"></div>
-            
-            <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart hover:text-red-500"></i>
-                <span class="text-sm">2k</span>
-                <i class="fas fa-share hover:text-blue-500"></i>
-                <span class="text-sm">560</span>
-            </div>
-
-            <div class="absolute bottom-20 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 text-white font-bold px-4 py-2 rounded-full inline-block text-xl mb-3 shadow-lg">
-                    320 AZN
-                </div>
-                <h2 class="text-2xl font-bold mb-1">AirPods Pro (2nd Generation)</h2>
-                <p class="text-sm opacity-90 line-clamp-2">Rəsmi zəmanətli. Qutusu açılmayıb, tamamilə yenidir.</p>
-                <button onclick="openModal('elan4')" class="mt-4 bg-white text-black px-6 py-2 rounded-lg font-bold shadow-md w-full">
-                    Ətraflı Məlumat <i class="fas fa-chevron-right ml-2"></i>
-                </button>
+            <div class="absolute bottom-24 left-4 text-white w-3/4 p-4 z-10">
+                <div class="bg-green-600 px-4 py-1 rounded-full inline-block text-lg font-bold mb-2">180 AZN</div>
+                <h2 class="text-xl font-bold">Nike Air Max 270</h2>
+                <p class="text-sm opacity-80">Ölçü 43. Cəmi 2 dəfə geyinilib.</p>
+                <button onclick="openModal('elan2')" class="mt-3 bg-white text-black px-6 py-2 rounded-lg font-bold w-full">Ətraflı Bax</button>
             </div>
         </div>
 
     </div>
 
-    <div class="fixed bottom-0 left-0 w-full bg-black border-t border-gray-800 flex justify-around p-4 text-gray-500 text-xl z-50">
-        <div class="text-white"><i class="fas fa-home block text-center"></i><span class="text-xs">Ana Səhifə</span></div>
-        <div><i class="fas fa-search block text-center"></i><span class="text-xs">Axtar</span></div>
-        <div class="text-white bg-red-500 px-4 py-1 rounded-lg"><i class="fas fa-plus block text-center"></i></div>
-        <div><i class="fas fa-comment block text-center"></i><span class="text-xs">Mesajlar</span></div>
-        <div><i class="fas fa-user block text-center"></i><span class="text-xs">Profil</span></div>
+    <div class="fixed bottom-0 left-0 w-full bg-black border-t border-gray-900 flex justify-around p-4 text-gray-500 z-50">
+        <div class="text-white text-center"><i class="fas fa-home block"></i><span class="text-[10px]">Ana Səhifə</span></div>
+        <div class="text-center"><i class="fas fa-search block"></i><span class="text-[10px]">Axtar</span></div>
+        <div class="bg-red-600 text-white px-5 py-1 rounded-xl self-center"><i class="fas fa-plus"></i></div>
+        <div class="text-center"><i class="fas fa-comment block"></i><span class="text-[10px]">Mesajlar</span></div>
+        <div class="text-center"><i class="fas fa-user block"></i><span class="text-[10px]">Profil</span></div>
     </div>
 
-    <div id="infoModal" class="modal flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-lg h-3/4 overflow-y-auto relative p-6">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-gray-500">&times;</button>
-            
-            <div id="modalContent" class="space-y-4">
-                </div>
+    <div id="infoModal" onclick="closeModalOutside(event)">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm relative p-6 shadow-2xl animate-bounce-short">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-gray-400 hover:text-black">&times;</button>
+                <div id="modalContent">
+                    </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Avtomatik Play/Pause məntiqi (Hansı video ekrandadırsa, o oynasın)
         const container = document.getElementById('videoContainer');
-        const videos = container.querySelectorAll('video');
-
-        const observerOptions = {
-            root: container,
-            threshold: 0.5 // Videonun 50%-i görünəndə işə düşür
-        };
+        const videos = document.querySelectorAll('video');
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const video = entry.target;
                 if (entry.isIntersecting) {
-                    video.play();
+                    entry.target.play();
                 } else {
-                    video.pause();
-                    video.currentTime = 0; // Videonu başa qaytarır
+                    entry.target.pause();
+                    entry.target.currentTime = 0;
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.5 });
 
         videos.forEach(video => observer.observe(video));
 
-        // Məhsul Məlumatları (Verilənlər Bazası əvəzi)
         const elanlarMəlumatı = {
             'elan1': {
-                başlıq: 'iPhone 13 Pro Max - 256GB Sierra Blue',
+                başlıq: 'iPhone 13 Pro Max - 256GB',
                 qiymət: '1450 AZN',
-                təsvir: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu, kabelləri var. Face ID, True Tone işləyir. Zəmanət verilir.',
-                satıcı: 'Samir H.',
-                telefon: '+994 50 123 45 67',
-                şəkillər: ['img1.jpg', 'img2.jpg']
+                təsvir: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu var. Pil 92%.',
+                tel: '+994 50 123 45 67'
             },
             'elan2': {
-                başlıq: 'Nike Air Max 270 - Orijinal (Ölçü 43)',
+                başlıq: 'Nike Air Max 270 - Orijinal',
                 qiymət: '180 AZN',
-                təsvir: 'Cəmi 2 dəfə geyinilib. Ayağıma sıxdığı üçün satıram. Qutusu var. Xaricdən alınıb.',
-                satıcı: 'Həsən K.',
-                telefon: '+994 70 987 65 43'
-            },
-            'elan3': {
-                başlıq: 'BMW E60 535D M Tech - 2008 il',
-                qiymət: '22 000 AZN',
-                təsvir: 'M5 yığılıb, zavod M paket deyil. Motor, karobka, xodovoy saz vəziyyətdədir. Vuruğu, udarı yoxdur. Barter mümkündür.',
-                satıcı: 'Avto Salon X',
-                telefon: '+994 55 111 22 33'
-            },
-            'elan4': {
-                başlıq: 'AirPods Pro (2nd Generation) - Yeni',
-                qiymət: '320 AZN',
-                təsvir: 'Zavod qutusundadır, açılmayıb. Rəsmi Apple zəmanəti var. 1 il.',
-                satıcı: 'Apple Store Bakı',
-                telefon: '+994 12 400 00 00'
+                təsvir: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb.',
+                tel: '+994 70 987 65 43'
             }
         };
 
-        // Modalı Açmaq funksiyası
-        function openModal(elanId) {
-            const data = elanlarMəlumatı[elanId];
+        function openModal(id) {
+            const data = elanlarMəlumatı[id];
             const content = document.getElementById('modalContent');
-            
-            if (data) {
-                // Modalın içini doldururuq
-                content.innerHTML = `
-                    <div class="bg-green-100 text-green-800 text-3xl font-bold p-4 rounded-xl text-center mb-6">${data.qiymət}</div>
-                    <h2 class="text-2xl font-bold text-gray-900">${data.başlıq}</h2>
-                    <p class="text-gray-700 mt-4 leading-relaxed">${data.təsvir}</p>
-                    <div class="border-t border-b border-gray-200 py-4 mt-6">
-                        <p class="text-sm text-gray-500">Satıcı:</p>
-                        <p class="font-bold text-lg">${data.satıcı}</p>
-                    </div>
-                    <a href="tel:${data.telefon}" class="block bg-blue-600 text-white text-center px-6 py-4 rounded-xl font-bold text-lg shadow-md w-full mt-6">
-                        <i class="fas fa-phone mr-2"></i> Zəng Et: ${data.telefon}
+            content.innerHTML = `
+                <div class="text-center">
+                    <div class="bg-green-100 text-green-700 text-2xl font-bold py-2 rounded-xl mb-4">${data.qiymət}</div>
+                    <h2 class="text-xl font-bold mb-2">${data.başlıq}</h2>
+                    <p class="text-gray-600 text-sm mb-6">${data.təsvir}</p>
+                    <a href="tel:${data.tel}" class="block bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
+                        <i class="fas fa-phone mr-2"></i> Zəng Et
                     </a>
-                `;
-            </div>
-            
-            document.getElementById('infoModal').style.display = 'flex';
+                </div>
+            `;
+            document.getElementById('infoModal').style.display = 'block';
         }
 
-        // Modalı Bağlamaq funksiyası
         function closeModal() {
             document.getElementById('infoModal').style.display = 'none';
         }
 
-        // Modal xaricinə kliklədikdə bağlamaq
-        window.onclick = function(event) {
-            const modal = document.getElementById('infoModal');
-            if (event.target == modal) {
+        function closeModalOutside(event) {
+            if (event.target.id === "infoModal") {
                 closeModal();
             }
         }
