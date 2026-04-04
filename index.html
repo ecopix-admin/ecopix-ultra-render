@@ -2,119 +2,149 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Video Elanlar - TikTok Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TeleMarket - Video Elanlar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background-color: black;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .video-container {
             height: 100vh;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
-            scrollbar-width: none; /* Firefox üçün skrolu gizlət */
+            scrollbar-width: none;
         }
-        .video-container::-webkit-scrollbar { display: none; } /* Chrome üçün skrolu gizlət */
-
+        .video-container::-webkit-scrollbar { display: none; }
         .video-section {
             height: 100vh;
             scroll-snap-align: start;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        video {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-        }
+        video { object-fit: cover; width: 100%; height: 100%; }
         .gradient-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4), transparent);
             pointer-events: none;
         }
-        /* MODALIN DÜZƏLİŞİ */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        /* Modal Style */
         #infoModal {
-            display: none; /* İlkin olaraq gizli */
+            display: none;
             position: fixed;
-            z-index: 9999; /* Hər şeyin üstündə durması üçün */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
+            inset: 0;
+            z-index: 999;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
 <body>
 
+    <div class="fixed top-0 left-0 w-full z-50 p-4 flex gap-2 overflow-x-auto no-scrollbar bg-gradient-to-b from-black/80 to-transparent">
+        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap active:bg-white active:text-black">🚗 Maşınlar</button>
+        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">🏠 Evlər</button>
+        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">📱 Telefonlar</button>
+        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">🛋️ Mebel</button>
+    </div>
+
     <div class="video-container" id="videoContainer">
 
         <div class="video-section">
-            <video loop muted playsinline>
+            <video loop muted playsinline onclick="togglePlay(this)">
                 <source src="https://assets.mixkit.co/videos/preview/mixkit-holding-a-smartphone-with-a-blue-screen-34446-large.mp4" type="video/mp4">
             </video>
             <div class="gradient-overlay"></div>
             
-            <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart"></i>
-                <span class="text-sm">1.2k</span>
-                <i class="fas fa-share"></i>
-                <span class="text-sm">340</span>
+            <div class="absolute right-4 bottom-32 flex flex-col items-center space-y-5 z-20">
+                <div class="flex flex-col items-center">
+                    <button class="glass-btn w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg active:scale-90 transition" onclick="toggleLike(this)">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <span class="text-white text-[10px] mt-1">Bəyən</span>
+                </div>
+                <a href="https://wa.me/994501234567" class="bg-green-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-2xl shadow-lg active:scale-90 transition">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="tel:+994501234567" class="bg-blue-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg active:scale-90 transition">
+                    <i class="fas fa-phone"></i>
+                </a>
             </div>
 
-            <div class="absolute bottom-24 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 px-4 py-1 rounded-full inline-block text-lg font-bold mb-2">1450 AZN</div>
-                <h2 class="text-xl font-bold">iPhone 13 Pro Max</h2>
-                <p class="text-sm opacity-80">İdeal vəziyyətdə, cızığı yoxdur.</p>
-                <button onclick="openModal('elan1')" class="mt-3 bg-white text-black px-6 py-2 rounded-lg font-bold w-full">Ətraflı Bax</button>
+            <div class="absolute bottom-24 left-4 right-20 text-white z-10 p-2">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-green-600 text-white px-3 py-1 rounded-md font-bold text-lg">1450 AZN</span>
+                    <span class="bg-white/20 text-[10px] uppercase px-2 py-1 rounded tracking-widest">Yeni</span>
+                </div>
+                <h2 class="text-xl font-bold">iPhone 13 Pro Max - 256GB</h2>
+                <p class="text-sm opacity-70 line-clamp-1 italic">Bakı, Nərimanov • 2 saat əvvəl</p>
+                <button onclick="openModal('elan1')" class="mt-4 bg-white text-black py-2.5 px-6 rounded-xl font-bold w-full active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-info-circle"></i> Ətraflı Bax
+                </button>
             </div>
         </div>
 
         <div class="video-section">
-            <video loop muted playsinline>
+            <video loop muted playsinline onclick="togglePlay(this)">
                 <source src="https://assets.mixkit.co/videos/preview/mixkit-running-shoes-in-slow-motion-42666-large.mp4" type="video/mp4">
             </video>
             <div class="gradient-overlay"></div>
             
-            <div class="absolute right-4 bottom-40 flex flex-col items-center space-y-6 text-white text-3xl">
-                <i class="fas fa-heart"></i>
-                <span class="text-sm">890</span>
-                <i class="fas fa-share"></i>
-                <span class="text-sm">120</span>
+            <div class="absolute right-4 bottom-32 flex flex-col items-center space-y-5 z-20">
+                <div class="flex flex-col items-center">
+                    <button class="glass-btn w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg" onclick="toggleLike(this)">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <span class="text-white text-[10px] mt-1">Bəyən</span>
+                </div>
+                <a href="https://wa.me/994709876543" class="bg-green-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-2xl shadow-lg">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="tel:+994709876543" class="bg-blue-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg">
+                    <i class="fas fa-phone"></i>
+                </a>
             </div>
 
-            <div class="absolute bottom-24 left-4 text-white w-3/4 p-4 z-10">
-                <div class="bg-green-600 px-4 py-1 rounded-full inline-block text-lg font-bold mb-2">180 AZN</div>
-                <h2 class="text-xl font-bold">Nike Air Max 270</h2>
-                <p class="text-sm opacity-80">Ölçü 43. Cəmi 2 dəfə geyinilib.</p>
-                <button onclick="openModal('elan2')" class="mt-3 bg-white text-black px-6 py-2 rounded-lg font-bold w-full">Ətraflı Bax</button>
+            <div class="absolute bottom-24 left-4 right-20 text-white z-10 p-2">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-green-600 text-white px-3 py-1 rounded-md font-bold text-lg">180 AZN</span>
+                    <span class="bg-white/20 text-[10px] uppercase px-2 py-1 rounded tracking-widest">İşlənmiş</span>
+                </div>
+                <h2 class="text-xl font-bold">Nike Air Max 270 - Orijinal</h2>
+                <p class="text-sm opacity-70 line-clamp-1 italic">Sumqayıt • Dünən</p>
+                <button onclick="openModal('elan2')" class="mt-4 bg-white text-black py-2.5 px-6 rounded-xl font-bold w-full active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-info-circle"></i> Ətraflı Bax
+                </button>
             </div>
         </div>
 
     </div>
 
-    <div class="fixed bottom-0 left-0 w-full bg-black border-t border-gray-900 flex justify-around p-4 text-gray-500 z-50">
-        <div class="text-white text-center"><i class="fas fa-home block"></i><span class="text-[10px]">Ana Səhifə</span></div>
-        <div class="text-center"><i class="fas fa-search block"></i><span class="text-[10px]">Axtar</span></div>
-        <div class="bg-red-600 text-white px-5 py-1 rounded-xl self-center"><i class="fas fa-plus"></i></div>
-        <div class="text-center"><i class="fas fa-comment block"></i><span class="text-[10px]">Mesajlar</span></div>
-        <div class="text-center"><i class="fas fa-user block"></i><span class="text-[10px]">Profil</span></div>
+    <div class="fixed bottom-0 left-0 w-full bg-black/90 border-t border-white/10 flex justify-around items-center p-3 text-gray-500 z-50 backdrop-blur-md">
+        <div class="text-white text-center"><i class="fas fa-home text-xl"></i><p class="text-[9px] mt-1">Əsas</p></div>
+        <div class="text-center"><i class="fas fa-search text-xl"></i><p class="text-[9px] mt-1">Axtar</p></div>
+        <div class="relative -top-2 bg-gradient-to-tr from-blue-600 to-blue-400 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-90 transition border-4 border-black">
+            <i class="fas fa-plus text-xl"></i>
+        </div>
+        <div class="text-center"><i class="fas fa-heart text-xl"></i><p class="text-[9px] mt-1">Seçilmişlər</p></div>
+        <div class="text-center"><i class="fas fa-user text-xl"></i><p class="text-[9px] mt-1">Profil</p></div>
     </div>
 
     <div id="infoModal" onclick="closeModalOutside(event)">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-3xl w-full max-w-sm relative p-6 shadow-2xl animate-bounce-short">
-                <button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-gray-400 hover:text-black">&times;</button>
+        <div class="flex items-end justify-center min-h-screen">
+            <div class="bg-white rounded-t-[40px] w-full p-8 shadow-2xl transform transition-transform duration-300 translate-y-0 relative">
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
+                <button onclick="closeModal()" class="absolute top-6 right-6 text-2xl text-gray-400">&times;</button>
                 <div id="modalContent">
                     </div>
             </div>
@@ -122,7 +152,6 @@
     </div>
 
     <script>
-        const container = document.getElementById('videoContainer');
         const videos = document.querySelectorAll('video');
 
         const observer = new IntersectionObserver((entries) => {
@@ -131,53 +160,47 @@
                     entry.target.play();
                 } else {
                     entry.target.pause();
-                    entry.target.currentTime = 0;
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.6 });
 
         videos.forEach(video => observer.observe(video));
 
-        const elanlarMəlumatı = {
-            'elan1': {
-                başlıq: 'iPhone 13 Pro Max - 256GB',
-                qiymət: '1450 AZN',
-                təsvir: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu var. Pil 92%.',
-                tel: '+994 50 123 45 67'
-            },
-            'elan2': {
-                başlıq: 'Nike Air Max 270 - Orijinal',
-                qiymət: '180 AZN',
-                təsvir: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb.',
-                tel: '+994 70 987 65 43'
-            }
+        function togglePlay(video) {
+            if (video.paused) video.play();
+            else video.pause();
+        }
+
+        function toggleLike(btn) {
+            btn.classList.toggle('text-red-500');
+            btn.classList.toggle('bg-white/30');
+        }
+
+        const elanlarData = {
+            'elan1': { baş: 'iPhone 13 Pro Max', qiy: '1450 AZN', tes: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu var. Pil 92%. Rəng: Sierra Blue.', tel: '+994501234567' },
+            'elan2': { baş: 'Nike Air Max 270', qiy: '180 AZN', tes: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb. Orijinal qutusunda təqdim olunur.', tel: '+994709876543' }
         };
 
         function openModal(id) {
-            const data = elanlarMəlumatı[id];
-            const content = document.getElementById('modalContent');
-            content.innerHTML = `
-                <div class="text-center">
-                    <div class="bg-green-100 text-green-700 text-2xl font-bold py-2 rounded-xl mb-4">${data.qiymət}</div>
-                    <h2 class="text-xl font-bold mb-2">${data.başlıq}</h2>
-                    <p class="text-gray-600 text-sm mb-6">${data.təsvir}</p>
-                    <a href="tel:${data.tel}" class="block bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
-                        <i class="fas fa-phone mr-2"></i> Zəng Et
+            const data = elanlarData[id];
+            document.getElementById('modalContent').innerHTML = `
+                <h3 class="text-2xl font-black text-gray-900 mb-2">${data.baş}</h3>
+                <div class="text-green-600 text-2xl font-bold mb-4">${data.qiy}</div>
+                <p class="text-gray-500 leading-relaxed mb-8">${data.tes}</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="tel:${data.tel}" class="bg-blue-600 text-white py-4 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
+                        <i class="fas fa-phone"></i> Zəng Et
+                    </a>
+                    <a href="https://wa.me/${data.tel.replace('+', '')}" class="bg-green-500 text-white py-4 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-xl"></i> Yaz
                     </a>
                 </div>
             `;
             document.getElementById('infoModal').style.display = 'block';
         }
 
-        function closeModal() {
-            document.getElementById('infoModal').style.display = 'none';
-        }
-
-        function closeModalOutside(event) {
-            if (event.target.id === "infoModal") {
-                closeModal();
-            }
-        }
+        function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
+        function closeModalOutside(e) { if(e.target.id === 'infoModal') closeModal(); }
     </script>
 </body>
 </html>
