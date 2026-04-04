@@ -2,12 +2,12 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TeleMarket - Video Elanlar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         .video-container {
             height: 100vh;
             overflow-y: scroll;
@@ -29,8 +29,8 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 50%;
-            background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4), transparent);
+            height: 55%;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
             pointer-events: none;
         }
         .glass-btn {
@@ -38,24 +38,24 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        /* Modal Style */
         #infoModal {
             display: none;
             position: fixed;
             inset: 0;
             z-index: 999;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
         }
+        /* Cihazın aşağı düymələrindən qaçmaq üçün padding */
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
     </style>
 </head>
 <body>
 
-    <div class="fixed top-0 left-0 w-full z-50 p-4 flex gap-2 overflow-x-auto no-scrollbar bg-gradient-to-b from-black/80 to-transparent">
-        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap active:bg-white active:text-black">🚗 Maşınlar</button>
-        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">🏠 Evlər</button>
-        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">📱 Telefonlar</button>
-        <button class="glass-btn text-white px-4 py-1.5 rounded-full text-sm whitespace-nowrap">🛋️ Mebel</button>
+    <div class="fixed top-0 left-0 w-full z-50 p-4 flex gap-2 overflow-x-auto no-scrollbar bg-gradient-to-b from-black/90 to-transparent">
+        <button class="glass-btn text-white px-5 py-2 rounded-full text-sm whitespace-nowrap border-white/40">🚗 Maşınlar</button>
+        <button class="glass-btn text-white px-5 py-2 rounded-full text-sm whitespace-nowrap">🏠 Evlər</button>
+        <button class="glass-btn text-white px-5 py-2 rounded-full text-sm whitespace-nowrap">📱 Telefonlar</button>
     </div>
 
     <div class="video-container" id="videoContainer">
@@ -66,30 +66,27 @@
             </video>
             <div class="gradient-overlay"></div>
             
-            <div class="absolute right-4 bottom-32 flex flex-col items-center space-y-5 z-20">
-                <div class="flex flex-col items-center">
-                    <button class="glass-btn w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg active:scale-90 transition" onclick="toggleLike(this)">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <span class="text-white text-[10px] mt-1">Bəyən</span>
-                </div>
-                <a href="https://wa.me/994501234567" class="bg-green-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-2xl shadow-lg active:scale-90 transition">
+            <div class="absolute right-4 bottom-44 flex flex-col items-center space-y-6 z-20">
+                <button class="glass-btn w-14 h-14 rounded-full text-white flex items-center justify-center text-2xl shadow-xl active:scale-90 transition" onclick="toggleLike(this)">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <a href="https://wa.me/994501234567" class="bg-green-500 w-14 h-14 rounded-full text-white flex items-center justify-center text-3xl shadow-xl">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="tel:+994501234567" class="bg-blue-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg active:scale-90 transition">
+                <a href="tel:+994501234567" class="bg-blue-500 w-14 h-14 rounded-full text-white flex items-center justify-center text-2xl shadow-xl">
                     <i class="fas fa-phone"></i>
                 </a>
             </div>
 
-            <div class="absolute bottom-24 left-4 right-20 text-white z-10 p-2">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="bg-green-600 text-white px-3 py-1 rounded-md font-bold text-lg">1450 AZN</span>
-                    <span class="bg-white/20 text-[10px] uppercase px-2 py-1 rounded tracking-widest">Yeni</span>
+            <div class="absolute bottom-32 left-4 right-20 text-white z-10 p-2">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-green-600 text-white px-4 py-1.5 rounded-lg font-black text-xl shadow-lg">1450 AZN</span>
+                    <span class="bg-white/30 text-[10px] font-bold uppercase px-2 py-1 rounded">Yeni</span>
                 </div>
-                <h2 class="text-xl font-bold">iPhone 13 Pro Max - 256GB</h2>
-                <p class="text-sm opacity-70 line-clamp-1 italic">Bakı, Nərimanov • 2 saat əvvəl</p>
-                <button onclick="openModal('elan1')" class="mt-4 bg-white text-black py-2.5 px-6 rounded-xl font-bold w-full active:scale-95 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-info-circle"></i> Ətraflı Bax
+                <h2 class="text-2xl font-black leading-tight mb-1">iPhone 13 Pro Max - 256GB</h2>
+                <p class="text-sm font-medium opacity-80 italic">Bakı, Nərimanov • 2 saat əvvəl</p>
+                <button onclick="openModal('elan1')" class="mt-5 bg-white text-black py-3.5 px-6 rounded-2xl font-black w-full active:scale-95 transition shadow-2xl flex items-center justify-center gap-2">
+                    <i class="fas fa-eye text-lg"></i> Ətraflı Bax
                 </button>
             </div>
         </div>
@@ -100,52 +97,49 @@
             </video>
             <div class="gradient-overlay"></div>
             
-            <div class="absolute right-4 bottom-32 flex flex-col items-center space-y-5 z-20">
-                <div class="flex flex-col items-center">
-                    <button class="glass-btn w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg" onclick="toggleLike(this)">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <span class="text-white text-[10px] mt-1">Bəyən</span>
-                </div>
-                <a href="https://wa.me/994709876543" class="bg-green-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-2xl shadow-lg">
+            <div class="absolute right-4 bottom-44 flex flex-col items-center space-y-6 z-20">
+                <button class="glass-btn w-14 h-14 rounded-full text-white flex items-center justify-center text-2xl shadow-xl" onclick="toggleLike(this)">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <a href="https://wa.me/994709876543" class="bg-green-500 w-14 h-14 rounded-full text-white flex items-center justify-center text-3xl shadow-xl">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="tel:+994709876543" class="bg-blue-500 w-12 h-12 rounded-full text-white flex items-center justify-center text-xl shadow-lg">
+                <a href="tel:+994709876543" class="bg-blue-500 w-14 h-14 rounded-full text-white flex items-center justify-center text-2xl shadow-xl">
                     <i class="fas fa-phone"></i>
                 </a>
             </div>
 
-            <div class="absolute bottom-24 left-4 right-20 text-white z-10 p-2">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="bg-green-600 text-white px-3 py-1 rounded-md font-bold text-lg">180 AZN</span>
-                    <span class="bg-white/20 text-[10px] uppercase px-2 py-1 rounded tracking-widest">İşlənmiş</span>
+            <div class="absolute bottom-32 left-4 right-20 text-white z-10 p-2">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-green-600 text-white px-4 py-1.5 rounded-lg font-black text-xl shadow-lg">180 AZN</span>
+                    <span class="bg-white/30 text-[10px] font-bold uppercase px-2 py-1 rounded">İşlənmiş</span>
                 </div>
-                <h2 class="text-xl font-bold">Nike Air Max 270 - Orijinal</h2>
-                <p class="text-sm opacity-70 line-clamp-1 italic">Sumqayıt • Dünən</p>
-                <button onclick="openModal('elan2')" class="mt-4 bg-white text-black py-2.5 px-6 rounded-xl font-bold w-full active:scale-95 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-info-circle"></i> Ətraflı Bax
+                <h2 class="text-2xl font-black leading-tight mb-1">Nike Air Max 270 - Orijinal</h2>
+                <p class="text-sm font-medium opacity-80 italic">Sumqayıt • Dünən</p>
+                <button onclick="openModal('elan2')" class="mt-5 bg-white text-black py-3.5 px-6 rounded-2xl font-black w-full active:scale-95 transition shadow-2xl flex items-center justify-center gap-2">
+                    <i class="fas fa-eye text-lg"></i> Ətraflı Bax
                 </button>
             </div>
         </div>
 
     </div>
 
-    <div class="fixed bottom-0 left-0 w-full bg-black/90 border-t border-white/10 flex justify-around items-center p-3 text-gray-500 z-50 backdrop-blur-md">
-        <div class="text-white text-center"><i class="fas fa-home text-xl"></i><p class="text-[9px] mt-1">Əsas</p></div>
-        <div class="text-center"><i class="fas fa-search text-xl"></i><p class="text-[9px] mt-1">Axtar</p></div>
-        <div class="relative -top-2 bg-gradient-to-tr from-blue-600 to-blue-400 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-90 transition border-4 border-black">
-            <i class="fas fa-plus text-xl"></i>
+    <div class="fixed bottom-0 left-0 w-full bg-black border-t border-white/10 flex justify-around items-center p-4 pb-6 text-gray-500 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+        <div class="text-white text-center flex flex-col items-center"><i class="fas fa-home text-2xl"></i><span class="text-[10px] mt-1 font-bold">Əsas</span></div>
+        <div class="text-center flex flex-col items-center"><i class="fas fa-search text-2xl"></i><span class="text-[10px] mt-1 font-bold">Axtar</span></div>
+        <div class="relative -top-4 bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/40 border-4 border-black active:scale-90 transition">
+            <i class="fas fa-plus text-2xl"></i>
         </div>
-        <div class="text-center"><i class="fas fa-heart text-xl"></i><p class="text-[9px] mt-1">Seçilmişlər</p></div>
-        <div class="text-center"><i class="fas fa-user text-xl"></i><p class="text-[9px] mt-1">Profil</p></div>
+        <div class="text-center flex flex-col items-center"><i class="fas fa-heart text-2xl"></i><span class="text-[10px] mt-1 font-bold">Seçilmişlər</span></div>
+        <div class="text-center flex flex-col items-center"><i class="fas fa-user text-2xl"></i><span class="text-[10px] mt-1 font-bold">Profil</span></div>
     </div>
 
     <div id="infoModal" onclick="closeModalOutside(event)">
         <div class="flex items-end justify-center min-h-screen">
-            <div class="bg-white rounded-t-[40px] w-full p-8 shadow-2xl transform transition-transform duration-300 translate-y-0 relative">
+            <div class="bg-white rounded-t-[40px] w-full p-8 pb-12 shadow-2xl relative">
                 <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
-                <button onclick="closeModal()" class="absolute top-6 right-6 text-2xl text-gray-400">&times;</button>
-                <div id="modalContent">
+                <button onclick="closeModal()" class="absolute top-6 right-6 text-3xl text-gray-400 font-light">&times;</button>
+                <div id="modalContent" class="safe-bottom">
                     </div>
             </div>
         </div>
@@ -153,46 +147,35 @@
 
     <script>
         const videos = document.querySelectorAll('video');
-
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.play();
-                } else {
-                    entry.target.pause();
-                }
+                if (entry.isIntersecting) { entry.target.play(); } 
+                else { entry.target.pause(); }
             });
         }, { threshold: 0.6 });
 
-        videos.forEach(video => observer.observe(video));
+        videos.forEach(v => observer.observe(v));
 
-        function togglePlay(video) {
-            if (video.paused) video.play();
-            else video.pause();
-        }
-
-        function toggleLike(btn) {
-            btn.classList.toggle('text-red-500');
-            btn.classList.toggle('bg-white/30');
-        }
+        function togglePlay(v) { v.paused ? v.play() : v.pause(); }
+        function toggleLike(btn) { btn.classList.toggle('text-red-500'); btn.classList.toggle('bg-white/40'); }
 
         const elanlarData = {
-            'elan1': { baş: 'iPhone 13 Pro Max', qiy: '1450 AZN', tes: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu var. Pil 92%. Rəng: Sierra Blue.', tel: '+994501234567' },
-            'elan2': { baş: 'Nike Air Max 270', qiy: '180 AZN', tes: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb. Orijinal qutusunda təqdim olunur.', tel: '+994709876543' }
+            'elan1': { baş: 'iPhone 13 Pro Max', qiy: '1450 AZN', tes: 'Tel ideal vəziyyətdədir. Heç bir problemi yoxdur. Qutusu var. Pil 92%. Sierra Blue.', tel: '+994501234567' },
+            'elan2': { baş: 'Nike Air Max 270', qiy: '180 AZN', tes: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb. Orijinal qutusunda.', tel: '+994709876543' }
         };
 
         function openModal(id) {
-            const data = elanlarData[id];
+            const d = elanlarData[id];
             document.getElementById('modalContent').innerHTML = `
-                <h3 class="text-2xl font-black text-gray-900 mb-2">${data.baş}</h3>
-                <div class="text-green-600 text-2xl font-bold mb-4">${data.qiy}</div>
-                <p class="text-gray-500 leading-relaxed mb-8">${data.tes}</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <a href="tel:${data.tel}" class="bg-blue-600 text-white py-4 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
-                        <i class="fas fa-phone"></i> Zəng Et
+                <h3 class="text-3xl font-black text-gray-900 mb-2">${d.baş}</h3>
+                <div class="text-green-600 text-3xl font-black mb-4">${d.qiy}</div>
+                <p class="text-gray-600 leading-relaxed text-lg mb-10 font-medium">${d.tes}</p>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <a href="tel:${d.tel}" class="bg-blue-600 text-white py-5 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                        <i class="fas fa-phone text-xl"></i> Zəng Et
                     </a>
-                    <a href="https://wa.me/${data.tel.replace('+', '')}" class="bg-green-500 text-white py-4 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
-                        <i class="fab fa-whatsapp text-xl"></i> Yaz
+                    <a href="https://wa.me/${d.tel.replace('+', '')}" class="bg-green-500 text-white py-5 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-green-200">
+                        <i class="fab fa-whatsapp text-2xl"></i> Yaz
                     </a>
                 </div>
             `;
