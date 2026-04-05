@@ -1,215 +1,265 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BlueChat PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco Mesh Ultra - P2P</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main-blue: #0088cc; --bg: #f0f2f5; --sent: #e3f2fd; }
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+        /* Header */
+        .header { background: var(--main-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Chat List */
+        #chat-list { flex: 1; overflow-y: auto; background: white; }
+        .chat-item { display: flex; padding: 15px; border-bottom: 1px solid #eee; align-items: center; cursor: pointer; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #ddd; margin-right: 15px; }
 
-<style>
-:root{
-  --blue:#0088cc;
-}
-body{margin:0;font-family:sans-serif;background:#f0f2f5}
+        /* Chat Window */
+        #chat-window { position: fixed; inset: 0; background: #e5ddd5; display: none; flex-direction: column; z-index: 100; }
+        .cw-header { background: var(--main-blue); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        /* Bubbles */
+        .msg { max-width: 80%; padding: 10px; border-radius: 12px; position: relative; font-size: 15px; }
+        .sent { align-self: flex-end; background: var(--sent); border-bottom-right-radius: 0; }
+        .received { align-self: flex-start; background: white; border-bottom-left-radius: 0; }
+        .one-time-img { cursor: pointer; filter: blur(10px); transition: 0.3s; }
+        .one-time-img.viewed { display: none; }
 
-/* HEADER */
-.header{
-  background:var(--blue);
-  color:white;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-}
+        /* Input Area */
+        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 8px; }
+        .input-box { flex: 1; background: white; border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; }
+        .input-box input { border: none; flex: 1; outline: none; padding: 5px; }
+        .btn-circle { width: 45px; height: 45px; background: var(--main-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; }
 
-/* CHAT */
-#chat{padding:10px;height:75vh;overflow:auto}
+        /* Video Call Screen */
+        #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 500; }
+        .video-box { flex: 1; position: relative; background: #222; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; }
+        .end-call { background: red !important; }
 
-.msg{
-  padding:8px 12px;
-  margin:5px;
-  border-radius:10px;
-  max-width:70%;
-}
-
-.sent{background:#d1ecff;margin-left:auto}
-.recv{background:white}
-
-/* INPUT */
-.input{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  display:flex;
-  background:white;
-}
-
-.input input{
-  flex:1;
-  padding:15px;
-  border:none;
-}
-
-.btn{
-  background:var(--blue);
-  color:white;
-  padding:15px;
-  cursor:pointer;
-}
-
-/* CALL SCREEN */
-#call{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:black;
-}
-
-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-#myVideo{
-  width:120px;
-  position:absolute;
-  bottom:10px;
-  right:10px;
-}
-</style>
+        /* Incoming Call Popup */
+        #incoming-call { position: fixed; top: 20px; left: 10px; right: 10px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); display: none; z-index: 1000; align-items: center; justify-content: space-between; }
+    </style>
 </head>
-
 <body>
 
 <div class="header">
-  <div>ID: <span id="id"></span></div>
-  <div>
-    <button onclick="connect()">Qoşul</button>
-    <button onclick="startCall()">📞</button>
-  </div>
+    <div id="my-id-display">ID: Yüklənir...</div>
+    <div class="icons"><i class="fas fa-video" onclick="startCall()"></i></div>
 </div>
 
-<div id="chat"></div>
+<div id="chat-list"></div>
 
-<div class="input">
-  <input id="msg">
-  <div class="btn" onclick="send()">➤</div>
-  <div class="btn" onclick="record()">🎤</div>
+<div id="incoming-call">
+    <span>📞 Görüntülü Zəng...</span>
+    <div>
+        <button onclick="acceptCall()" style="background:green; color:white; border:none; padding:10px; border-radius:5px;">Cavab</button>
+        <button onclick="rejectCall()" style="background:red; color:white; border:none; padding:10px; border-radius:5px;">Rədd</button>
+    </div>
 </div>
 
-<div id="call">
-  <video id="remoteVideo" autoplay></video>
-  <video id="myVideo" autoplay muted></video>
-  <button onclick="endCall()" style="position:absolute;bottom:20px;left:50%">❌</button>
+<div id="chat-window">
+    <div class="cw-header">
+        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+        <div class="avatar" style="width:35px; height:35px;"></div>
+        <b id="chat-name">Dost</b>
+        <i class="fas fa-video" style="margin-left:auto" onclick="startCall()"></i>
+    </div>
+    <div class="messages" id="msg-container"></div>
+    <div class="input-area">
+        <button class="btn-circle" onclick="openMedia()"><i class="fas fa-camera"></i></button>
+        <div class="input-box">
+            <input type="text" id="text-input" placeholder="Mesaj...">
+        </div>
+        <button class="btn-circle" id="voice-btn" onmousedown="recordStart()" onmouseup="recordEnd()"><i class="fas fa-microphone"></i></button>
+    </div>
 </div>
+
+<div id="call-screen">
+    <div class="video-box"><video id="remote-video" autoplay playsinline></video></div>
+    <div class="video-box"><video id="local-video" autoplay muted playsinline></video></div>
+    <div class="call-controls">
+        <button class="btn-circle end-call" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+    </div>
+</div>
+
+<input type="file" id="media-input" style="display:none" accept="image/*,video/*" onchange="sendMedia(this.files[0])">
+<audio id="ringtone" src="https://www.soundjay.com/phone/telephone-ring-03a.mp3" loop></audio>
 
 <script>
-// ID
-let myId = localStorage.getItem("id");
-if(!myId){
-  myId = Math.floor(100000+Math.random()*900000);
-  localStorage.setItem("id",myId);
-}
-document.getElementById("id").innerText = myId;
+    let myId = Math.floor(100000 + Math.random() * 900000).toString();
+    const peer = new Peer(myId);
+    let conn, activeCall, localStream;
+    let targetId = prompt("Daxil olmaq üçün Dostun ID-sini yaz (və ya boş qoy):");
 
-// Peer
-let peer = new Peer(myId);
-let conn;
-let currentCall;
-let localStream;
+    document.getElementById('my-id-display').innerText = "ID: " + myId;
 
-// CONNECT
-function connect(){
-  let id = prompt("ID:");
-  conn = peer.connect(id);
-  conn.on("data",data=>addMsg(data,"recv"));
-}
+    peer.on('open', id => console.log('My ID:', id));
 
-// SEND
-function send(){
-  let val = document.getElementById("msg").value;
-  conn.send(val);
-  addMsg(val,"sent");
-}
+    // Mesaj və Fayl qəbulu
+    peer.on('connection', c => {
+        conn = c;
+        setupConn();
+    });
 
-// UI
-function addMsg(t,type){
-  let d=document.createElement("div");
-  d.className="msg "+type;
-  d.innerText=t;
-  chat.appendChild(d);
-}
+    // Zəng qəbulu
+    peer.on('call', call => {
+        activeCall = call;
+        document.getElementById('ringtone').play();
+        document.getElementById('incoming-call').style.display = 'flex';
+    });
 
-// RECEIVE
-peer.on("connection",c=>{
-  conn=c;
-  c.on("data",d=>addMsg(d,"recv"));
-});
+    function setupConn() {
+        conn.on('data', data => {
+            if(data.type === 'text') appendMsg(data.val, 'received');
+            if(data.type === 'media') appendMedia(data, 'received');
+            if(data.type === 'voice') appendVoice(data.val, 'received');
+            if(data.type === 'delete-request') {
+                document.getElementById(data.msgId)?.remove();
+            }
+        });
+    }
 
-// 🎤 VOICE
-let rec;
-let chunks=[];
-async function record(){
-  let stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  rec=new MediaRecorder(stream);
-  rec.start();
-  chunks=[];
-  rec.ondataavailable=e=>chunks.push(e.data);
-  rec.onstop=()=>{
-    let blob=new Blob(chunks);
-    let url=URL.createObjectURL(blob);
-    conn.send({audio:url});
-    addAudio(url,"sent");
-  };
-  setTimeout(()=>rec.stop(),3000);
-}
+    function appendMsg(text, side) {
+        const div = document.createElement('div');
+        div.className = `msg ${side}`;
+        div.innerText = text;
+        document.getElementById('msg-container').appendChild(div);
+    }
 
-// AUDIO UI
-function addAudio(src,type){
-  let d=document.createElement("div");
-  d.className="msg "+type;
-  d.innerHTML=`<audio controls src="${src}"></audio>`;
-  chat.appendChild(d);
-}
+    function openMedia() { document.getElementById('media-input').click(); }
 
-// 🎥 CALL
-async function startCall(){
-  let id = prompt("Zəng ID:");
-  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  myVideo.srcObject = localStream;
+    function sendMedia(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = { type: 'media', val: e.target.result, fileType: file.type, isOneTime: file.type.includes('image') };
+            conn.send(data);
+            appendMedia(data, 'sent');
+        };
+        reader.readAsDataURL(file);
+    }
 
-  let call = peer.call(id,localStream);
-  currentCall=call;
+    function appendMedia(data, side) {
+        const div = document.createElement('div');
+        div.className = `msg ${side}`;
+        if(data.fileType.includes('image')) {
+            const img = document.createElement('img');
+            img.src = data.val;
+            img.style.width = "100%";
+            if(data.isOneTime && side === 'received') {
+                img.className = 'one-time-img';
+                img.onclick = () => {
+                    img.style.filter = 'none';
+                    setTimeout(() => { img.remove(); div.innerText = "Şəkil silindi"; }, 5000);
+                };
+            }
+            div.appendChild(img);
+        } else {
+            const video = document.createElement('video');
+            video.src = data.val;
+            video.controls = true;
+            video.style.width = "100%";
+            div.appendChild(video);
+        }
+        document.getElementById('msg-container').appendChild(div);
+    }
 
-  call.on("stream",s=>{
-    remoteVideo.srcObject=s;
-  });
+    // Səs Yazma
+    let recorder;
+    async function recordStart() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/ogg' });
+            const reader = new FileReader();
+            reader.onload = () => {
+                conn.send({ type: 'voice', val: reader.result });
+                appendVoice(reader.result, 'sent');
+            };
+            reader.readAsDataURL(blob);
+        };
+        recorder.start();
+        document.getElementById('voice-btn').style.background = 'red';
+    }
 
-  call.style="block";
-  document.getElementById("call").style.display="block";
-}
+    function recordEnd() {
+        recorder.stop();
+        document.getElementById('voice-btn').style.background = 'var(--main-blue)';
+    }
 
-// RECEIVE CALL
-peer.on("call",async call=>{
-  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-  call.answer(localStream);
+    function appendVoice(src, side) {
+        const div = document.createElement('div');
+        div.className = `msg ${side}`;
+        const audio = new Audio(src);
+        audio.controls = true;
+        div.appendChild(audio);
+        document.getElementById('msg-container').appendChild(div);
+    }
 
-  myVideo.srcObject = localStream;
+    // Görüntülü Zəng Funksiyaları
+    async function startCall() {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('call-screen').style.display = 'flex';
+        const call = peer.call(targetId, localStream);
+        call.on('stream', remoteStream => {
+            document.getElementById('remote-video').srcObject = remoteStream;
+        });
+        activeCall = call;
+    }
 
-  call.on("stream",s=>{
-    remoteVideo.srcObject=s;
-  });
+    async function acceptCall() {
+        document.getElementById('ringtone').pause();
+        document.getElementById('incoming-call').style.display = 'none';
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('call-screen').style.display = 'flex';
+        activeCall.answer(localStream);
+        activeCall.on('stream', remoteStream => {
+            document.getElementById('remote-video').srcObject = remoteStream;
+        });
+    }
 
-  currentCall=call;
-  document.getElementById("call").style.display="block";
-});
+    function endCall() {
+        activeCall.close();
+        localStream.getTracks().forEach(t => t.stop());
+        document.getElementById('call-screen').style.display = 'none';
+    }
 
-// END
-function endCall(){
-  if(currentCall) currentCall.close();
-  document.getElementById("call").style.display="none";
-}
+    function rejectCall() {
+        document.getElementById('ringtone').pause();
+        document.getElementById('incoming-call').style.display = 'none';
+    }
+
+    // Mesaj göndərmə düyməsi/enter
+    document.getElementById('text-input').onkeypress = (e) => {
+        if(e.key === 'Enter') {
+            const val = e.target.value;
+            if(!val) return;
+            conn.send({ type: 'text', val: val });
+            appendMsg(val, 'sent');
+            e.target.value = '';
+        }
+    };
+
+    // İlkin qoşulma
+    if(targetId) {
+        conn = peer.connect(targetId);
+        setupConn();
+        document.getElementById('chat-window').style.display = 'flex';
+        document.getElementById('chat-name').innerText = "ID: " + targetId;
+    }
+
+    function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
 </script>
 
 </body>
