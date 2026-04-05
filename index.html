@@ -1,111 +1,274 @@
-<style>
-    /* Splash Screen Dizaynı */
-    #splash-screen {
-        position: fixed;
-        inset: 0;
-        background: var(--main-blue);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        color: white;
-        transition: opacity 0.5s ease;
-    }
-    .loader-logo {
-        font-size: 50px;
-        margin-bottom: 20px;
-        animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
-    }
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco Mesh Ultra - Gaming & Chat</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main-blue: #0088cc; --bg: #f0f2f5; --sent: #e3f2fd; }
+        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-    /* Giriş Kartı Dizaynı */
-    #login-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1500;
-    }
-    .login-card {
-        background: white;
-        padding: 30px;
-        border-radius: 25px;
-        width: 90%;
-        max-width: 350px;
-        text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .login-card h2 { color: var(--main-blue); margin-bottom: 10px; }
-    .id-input-field {
-        width: 100%;
-        padding: 12px;
-        margin: 20px 0;
-        border: 2px solid #eee;
-        border-radius: 12px;
-        font-size: 18px;
-        text-align: center;
-        outline: none;
-    }
-    .id-input-field:focus { border-color: var(--main-blue); }
-    .start-btn {
-        background: var(--main-blue);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 25px;
-        font-weight: bold;
-        cursor: pointer;
-        width: 100%;
-    }
-</style>
+        /* Ana Səhifə Oyunlar */
+        .game-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .game-card { background: white; border-radius: 15px; padding: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
+        .game-card i { font-size: 30px; color: var(--main-blue); margin-bottom: 8px; }
+        
+        /* Oyun Ekranı */
+        #game-frame-overlay { position: fixed; inset: 0; background: white; z-index: 2000; display: none; flex-direction: column; }
+        iframe { flex: 1; border: none; width: 100%; }
 
-<div id="splash-screen">
-    <div class="loader-logo"><i class="fas fa-network-wired"></i></div>
-    <h2>Eco Mesh Ultra</h2>
-    <p>Təhlükəsiz və Sürətli P2P</p>
-</div>
+        /* Sürüşdürmə Sonu - Giriş Bölməsi */
+        .login-section { grid-column: span 2; background: #fff; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; border: 2px dashed var(--main-blue); }
+        .my-id-box { font-size: 20px; font-weight: bold; color: var(--main-blue); margin-bottom: 10px; }
+        .id-input { width: 80%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 16px; }
 
-<div id="login-overlay">
-    <div class="login-card">
-        <i class="fas fa-user-shield" style="font-size: 40px; color: var(--main-blue);"></i>
-        <h2>Xoş Gəldiniz</h2>
-        <p>Söhbətə başlamaq üçün dostunun ID kodunu daxil et</p>
-        <input type="number" id="target-id-input" class="id-input-field" placeholder="Dostun ID-si">
-        <button class="start-btn" onclick="initializeConnection()">Söhbətə Başla</button>
-        <p style="font-size: 12px; color: #888; margin-top: 15px;">Sənin ID kodun: <b id="display-my-id">...</b></p>
+        /* Çat Pəncərəsi */
+        #chat-window { position: fixed; inset: 0; background: #e5ddd5; display: none; flex-direction: column; z-index: 1000; }
+        .cw-header { background: var(--main-blue); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* Mesaj Balonları */
+        .msg-wrapper { position: relative; display: flex; flex-direction: column; max-width: 85%; }
+        .msg-wrapper.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-wrapper.received { align-self: flex-start; align-items: flex-start; }
+        .msg { padding: 10px; border-radius: 12px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .sent .msg { background: var(--sent); }
+        .delete-btn { color: red; font-size: 14px; cursor: pointer; display: none; margin-top: 5px; }
+
+        /* Səs Pleyeri */
+        .voice-player { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+        .play-btn { background: var(--main-blue); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; }
+
+        /* Giriş/İnput */
+        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 8px; }
+        .voice-btn-active { transform: scale(1.4); background: red !important; }
+
+        /* Görüntülü Zəng 50/50 */
+        #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 3000; }
+        .video-box { flex: 1; height: 50vh; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="game-card" onclick="openGame('https://play2048.co/')"><i class="fas fa-th-large"></i><br>2048</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/adventure/Tetris-Mobile')"><i class="fas fa-cubes"></i><br>Tetris</div>
+    <div class="game-card" onclick="openGame('https://www.google.com/logos/2010/pacman10-i.html')"><i class="fas fa-ghost"></i><br>Pac-Man</div>
+    <div class="game-card" onclick="openGame('https://snake.io/')"><i class="fas fa-snake"></i><br>Snake</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/action/Stickman-Hook')"><i class="fas fa-running"></i><br>Stickman</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/puzzle/Sudoku')"><i class="fas fa-puzzle-piece"></i><br>Sudoku</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/action/Fruit-Ninja')"><i class="fas fa-apple-alt"></i><br>Fruit Ninja</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/sports/Basketball-Stars')"><i class="fas fa-basketball-ball"></i><br>Basketbol</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/puzzle/Bubble-Shooter')"><i class="fas fa-circle"></i><br>Bubble</div>
+    <div class="game-card" onclick="openGame('https://m.plonga.com/racing/Moto-X3M')"><i class="fas fa-motorcycle"></i><br>Moto X3M</div>
+
+    <div class="login-section">
+        <div class="my-id-box" id="my-id-display">ID: ------</div>
+        <i class="fas fa-ellipsis-h" onclick="showLogin()" style="cursor:pointer"></i>
+        <div id="login-form" style="display:none; margin-top:15px;">
+            <input type="number" id="friend-id" class="id-input" placeholder="Dostunun ID-si">
+            <button onclick="startChat()" style="margin-top:10px; padding:10px 20px; background:var(--main-blue); color:white; border:none; border-radius:10px;">OK</button>
+            <p id="chat-ready-msg" style="display:none; color: green; font-weight:bold; margin-top:10px;">Artıq söhbətə başlaya bilərsiz!</p>
+        </div>
     </div>
 </div>
 
+<div id="game-frame-overlay">
+    <div style="padding:10px; background:var(--main-blue); color:white;" onclick="closeGame()"><i class="fas fa-times"></i> Bağla</div>
+    <iframe id="game-iframe"></iframe>
+</div>
+
+<div id="chat-window">
+    <div class="cw-header">
+        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+        <b id="chat-name">Dost</b>
+        <i class="fas fa-video" style="margin-left:auto" onclick="startCall()"></i>
+    </div>
+    <div class="messages" id="msg-container"></div>
+    <div class="input-area">
+        <button class="play-btn" onclick="openMedia()"><i class="fas fa-camera"></i></button>
+        <div style="flex:1; background:white; border-radius:20px; padding:5px 15px;">
+            <input type="text" id="text-input" placeholder="Mesaj..." style="border:none; width:100%; outline:none;">
+        </div>
+        <button id="voice-btn" class="play-btn"><i class="fas fa-microphone"></i></button>
+    </div>
+</div>
+
+<div id="call-screen">
+    <div class="video-box"><video id="remote-video" autoplay playsinline></video></div>
+    <div class="video-box"><video id="local-video" autoplay muted playsinline></video></div>
+    <div style="position:absolute; bottom:20px; width:100%; text-align:center;">
+        <button onclick="endCall()" style="background:red; color:white; border:none; padding:15px; border-radius:50%;"><i class="fas fa-phone-slash"></i></button>
+    </div>
+</div>
+
+<input type="file" id="media-input" style="display:none" accept="image/*,video/*" capture="environment" onchange="sendMedia(this.files[0])">
+<audio id="msg-sound" src="https://www.soundjay.com/communication/message-marimba-alert.mp3"></audio>
+<audio id="ringtone" src="https://www.soundjay.com/phone/telephone-ring-03a.mp3" loop></audio>
+
 <script>
-    // Splash screen-i 2 saniyə sonra bağla
-    setTimeout(() => {
-        document.getElementById('splash-screen').style.opacity = '0';
+    // ID-ni Yadda Saxla (LocalStorage)
+    let myId = localStorage.getItem('p2p_id');
+    if(!myId) {
+        myId = Math.floor(100000 + Math.random() * 900000).toString();
+        localStorage.setItem('p2p_id', myId);
+    }
+    document.getElementById('my-id-display').innerText = "Sənin ID: " + myId;
+
+    const peer = new Peer(myId);
+    let conn, activeCall, localStream, recorder;
+    let targetId = "";
+
+    function openGame(url) {
+        document.getElementById('game-iframe').src = url;
+        document.getElementById('game-frame-overlay').style.display = 'flex';
+    }
+    function closeGame() { document.getElementById('game-frame-overlay').style.display = 'none'; }
+    function showLogin() { document.getElementById('login-form').style.display = 'block'; }
+
+    function startChat() {
+        targetId = document.getElementById('friend-id').value;
+        if(!targetId) return;
+        conn = peer.connect(targetId);
+        setupConn();
+        document.getElementById('chat-ready-msg').style.display = 'block';
         setTimeout(() => {
-            document.getElementById('splash-screen').style.display = 'none';
-        }, 500);
-    }, 2000);
-
-    // Sənin ID-ni giriş kartında göstər
-    document.getElementById('display-my-id').innerText = myId;
-
-    function initializeConnection() {
-        const inputId = document.getElementById('target-id-input').value;
-        if(inputId) {
-            targetId = inputId;
-            conn = peer.connect(targetId);
-            setupConn();
-            document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('chat-window').style.display = 'flex';
             document.getElementById('chat-name').innerText = "ID: " + targetId;
+        }, 1500);
+    }
+
+    peer.on('connection', c => { conn = c; setupConn(); document.getElementById('chat-window').style.display = 'flex'; });
+    peer.on('call', call => { 
+        activeCall = call; 
+        document.getElementById('ringtone').play();
+        if(confirm("Görüntülü zəng gəlir. Cavab verilsin?")) acceptCall();
+        else rejectCall();
+    });
+
+    function setupConn() {
+        conn.on('data', data => {
+            if(data.type === 'delete') { document.getElementById(data.id)?.remove(); return; }
+            document.getElementById('msg-sound').play();
+            appendMsg(data, 'received');
+        });
+    }
+
+    function appendMsg(data, side) {
+        const id = "msg-" + Date.now();
+        const wrapper = document.createElement('div');
+        wrapper.className = `msg-wrapper ${side}`;
+        wrapper.id = id;
+
+        let content = '';
+        if(data.type === 'text') content = data.val;
+        else if(data.type === 'media' && data.fileType.includes('image')) content = `<img src="${data.val}" style="width:100%; border-radius:10px;">`;
+        else if(data.type === 'media') content = `<video src="${data.val}" controls style="width:100%; border-radius:10px;"></video>`;
+        else if(data.type === 'voice') content = `
+            <div class="voice-player">
+                <button class="play-btn" onclick="playVoice(this, '${data.val}')"><i class="fas fa-play"></i></button>
+                <span>Səsli mesaj</span>
+            </div>`;
+
+        wrapper.innerHTML = `<div class="msg">${content}</div><i class="fas fa-ellipsis-h" onclick="showDelete('${id}')" style="font-size:10px; color:#999;"></i><div class="delete-btn" onclick="deleteMsg('${id}')"><i class="fas fa-trash"></i> Sil</div>`;
+        document.getElementById('msg-container').appendChild(wrapper);
+        document.getElementById('msg-container').scrollTop = document.getElementById('msg-container').scrollHeight;
+    }
+
+    function showDelete(id) {
+        const btn = document.querySelector(`#${id} .delete-btn`);
+        btn.style.display = btn.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function deleteMsg(id) {
+        document.getElementById(id).remove();
+        if(conn) conn.send({type: 'delete', id: id});
+    }
+
+    function playVoice(btn, src) {
+        const audio = new Audio(src);
+        if(btn.firstChild.className === "fas fa-play") {
+            audio.play();
+            btn.firstChild.className = "fas fa-pause";
+            audio.onended = () => btn.firstChild.className = "fas fa-play";
         } else {
-            alert("Zəhmət olmasa ID daxil edin!");
+            audio.pause();
+            btn.firstChild.className = "fas fa-play";
         }
     }
+
+    // Basıb Saxla Səs Yazma
+    const vBtn = document.getElementById('voice-btn');
+    vBtn.onmousedown = vBtn.ontouchstart = async (e) => {
+        e.preventDefault();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/ogg' });
+            const reader = new FileReader();
+            reader.onload = () => {
+                const data = { type: 'voice', val: reader.result };
+                conn.send(data); appendMsg(data, 'sent');
+            };
+            reader.readAsDataURL(blob);
+        };
+        recorder.start();
+        vBtn.classList.add('voice-btn-active');
+    };
+    window.onmouseup = window.ontouchend = () => {
+        if(recorder && recorder.state === "recording") {
+            recorder.stop();
+            vBtn.classList.remove('voice-btn-active');
+        }
+    };
+
+    function openMedia() { document.getElementById('media-input').click(); }
+    function sendMedia(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = { type: 'media', val: e.target.result, fileType: file.type };
+            conn.send(data); appendMsg(data, 'sent');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function startCall() {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('call-screen').style.display = 'flex';
+        activeCall = peer.call(targetId, localStream);
+        activeCall.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+    }
+
+    async function acceptCall() {
+        document.getElementById('ringtone').pause();
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('call-screen').style.display = 'flex';
+        activeCall.answer(localStream);
+        activeCall.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+    }
+
+    function endCall() {
+        if(activeCall) activeCall.close();
+        if(localStream) localStream.getTracks().forEach(t => t.stop());
+        document.getElementById('call-screen').style.display = 'none';
+    }
+
+    function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
+    document.getElementById('text-input').onkeypress = (e) => {
+        if(e.key === 'Enter' && e.target.value) {
+            const data = { type: 'text', val: e.target.value };
+            conn.send(data); appendMsg(data, 'sent');
+            e.target.value = '';
+        }
+    };
 </script>
+</body>
+</html>
