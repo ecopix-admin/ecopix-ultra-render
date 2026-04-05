@@ -8,43 +8,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main-blue: #0088cc; --bg: #f0f2f5; --sent: #e3f2fd; }
-        * { box-sizing: border-box; font-family: sans-serif; }
+        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Header */
         .header { background: var(--main-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        /* Chat List */
         #chat-list { flex: 1; overflow-y: auto; background: white; }
         .chat-item { display: flex; padding: 15px; border-bottom: 1px solid #eee; align-items: center; cursor: pointer; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #ddd; margin-right: 15px; }
 
-        /* Chat Window */
         #chat-window { position: fixed; inset: 0; background: #e5ddd5; display: none; flex-direction: column; z-index: 100; }
         .cw-header { background: var(--main-blue); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* Bubbles */
-        .msg { max-width: 80%; padding: 10px; border-radius: 12px; position: relative; font-size: 15px; }
-        .sent { align-self: flex-end; background: var(--sent); border-bottom-right-radius: 0; }
-        .received { align-self: flex-start; background: white; border-bottom-left-radius: 0; }
-        .one-time-img { cursor: pointer; filter: blur(10px); transition: 0.3s; }
-        .one-time-img.viewed { display: none; }
+        /* Mesaj Balonları və Menyu */
+        .msg-wrapper { position: relative; display: flex; flex-direction: column; max-width: 85%; }
+        .msg-wrapper.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-wrapper.received { align-self: flex-start; align-items: flex-start; }
 
-        /* Input Area */
-        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 8px; }
+        .msg { padding: 10px; border-radius: 12px; font-size: 15px; width: 100%; position: relative; }
+        .sent .msg { background: var(--sent); border-bottom-right-radius: 0; }
+        .received .msg { background: white; border-bottom-left-radius: 0; }
+
+        .msg-options { cursor: pointer; padding: 5px; color: #888; font-size: 12px; }
+        .delete-btn { color: #ff3b30; display: none; padding: 5px; cursor: pointer; font-size: 14px; }
+
+        /* Səs Düyməsi Animasiyası */
+        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 8px; position: relative; }
         .input-box { flex: 1; background: white; border-radius: 20px; padding: 8px 15px; display: flex; align-items: center; }
         .input-box input { border: none; flex: 1; outline: none; padding: 5px; }
-        .btn-circle { width: 45px; height: 45px; background: var(--main-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; }
+        
+        #voice-btn { transition: transform 0.2s, background 0.2s; z-index: 10; }
+        #voice-btn.recording { transform: scale(1.5); background: #ff3b30 !important; box-shadow: 0 0 15px rgba(255,59,48,0.5); }
 
-        /* Video Call Screen */
+        /* Video Zəng 50/50 */
         #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 500; }
-        .video-box { flex: 1; position: relative; background: #222; }
+        .video-box { flex: 1; height: 50vh; position: relative; border: 1px solid #333; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; }
-        .end-call { background: red !important; }
+        .call-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 600; }
 
-        /* Incoming Call Popup */
         #incoming-call { position: fixed; top: 20px; left: 10px; right: 10px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); display: none; z-index: 1000; align-items: center; justify-content: space-between; }
     </style>
 </head>
@@ -52,7 +53,7 @@
 
 <div class="header">
     <div id="my-id-display">ID: Yüklənir...</div>
-    <div class="icons"><i class="fas fa-video" onclick="startCall()"></i></div>
+    <i class="fas fa-video" onclick="startCall()"></i>
 </div>
 
 <div id="chat-list"></div>
@@ -68,17 +69,16 @@
 <div id="chat-window">
     <div class="cw-header">
         <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-        <div class="avatar" style="width:35px; height:35px;"></div>
         <b id="chat-name">Dost</b>
         <i class="fas fa-video" style="margin-left:auto" onclick="startCall()"></i>
     </div>
     <div class="messages" id="msg-container"></div>
     <div class="input-area">
-        <button class="btn-circle" onclick="openMedia()"><i class="fas fa-camera"></i></button>
-        <div class="input-box">
-            <input type="text" id="text-input" placeholder="Mesaj...">
-        </div>
-        <button class="btn-circle" id="voice-btn" onmousedown="recordStart()" onmouseup="recordEnd()"><i class="fas fa-microphone"></i></button>
+        <button class="btn-circle" onclick="openMedia()" style="width:45px; height:45px; border-radius:50%; border:none; background:var(--main-blue); color:white;"><i class="fas fa-camera"></i></button>
+        <div class="input-box"><input type="text" id="text-input" placeholder="Mesaj..."></div>
+        <button class="btn-circle" id="voice-btn" style="width:45px; height:45px; border-radius:50%; border:none; background:var(--main-blue); color:white;">
+            <i class="fas fa-microphone"></i>
+        </button>
     </div>
 </div>
 
@@ -86,94 +86,72 @@
     <div class="video-box"><video id="remote-video" autoplay playsinline></video></div>
     <div class="video-box"><video id="local-video" autoplay muted playsinline></video></div>
     <div class="call-controls">
-        <button class="btn-circle end-call" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+        <button onclick="endCall()" style="width:55px; height:55px; border-radius:50%; border:none; background:red; color:white;"><i class="fas fa-phone-slash"></i></button>
     </div>
 </div>
 
-<input type="file" id="media-input" style="display:none" accept="image/*,video/*" onchange="sendMedia(this.files[0])">
+<input type="file" id="media-input" style="display:none" accept="image/*,video/*" capture="environment" onchange="sendMedia(this.files[0])">
 <audio id="ringtone" src="https://www.soundjay.com/phone/telephone-ring-03a.mp3" loop></audio>
 
 <script>
     let myId = Math.floor(100000 + Math.random() * 900000).toString();
     const peer = new Peer(myId);
-    let conn, activeCall, localStream;
-    let targetId = prompt("Daxil olmaq üçün Dostun ID-sini yaz (və ya boş qoy):");
+    let conn, activeCall, localStream, recorder;
+    let targetId = prompt("Dostun ID-sini yaz:");
 
     document.getElementById('my-id-display').innerText = "ID: " + myId;
 
-    peer.on('open', id => console.log('My ID:', id));
-
-    // Mesaj və Fayl qəbulu
-    peer.on('connection', c => {
-        conn = c;
-        setupConn();
-    });
-
-    // Zəng qəbulu
-    peer.on('call', call => {
-        activeCall = call;
-        document.getElementById('ringtone').play();
-        document.getElementById('incoming-call').style.display = 'flex';
-    });
+    peer.on('connection', c => { conn = c; setupConn(); });
+    peer.on('call', call => { activeCall = call; document.getElementById('ringtone').play(); document.getElementById('incoming-call').style.display = 'flex'; });
 
     function setupConn() {
         conn.on('data', data => {
-            if(data.type === 'text') appendMsg(data.val, 'received');
-            if(data.type === 'media') appendMedia(data, 'received');
-            if(data.type === 'voice') appendVoice(data.val, 'received');
-            if(data.type === 'delete-request') {
-                document.getElementById(data.msgId)?.remove();
-            }
+            if(data.type === 'delete') { document.getElementById(data.id)?.remove(); return; }
+            appendElement(data, 'received');
         });
     }
 
-    function appendMsg(text, side) {
-        const div = document.createElement('div');
-        div.className = `msg ${side}`;
-        div.innerText = text;
-        document.getElementById('msg-container').appendChild(div);
+    function appendElement(data, side) {
+        const id = "msg-" + Date.now();
+        const wrapper = document.createElement('div');
+        wrapper.className = `msg-wrapper ${side}`;
+        wrapper.id = id;
+
+        let content = '';
+        if(data.type === 'text') content = data.val;
+        else if(data.type === 'media' && data.fileType.includes('image')) content = `<img src="${data.val}" style="width:100%; border-radius:8px;">`;
+        else if(data.type === 'media') content = `<video src="${data.val}" controls style="width:100%; border-radius:8px;"></video>`;
+        else if(data.type === 'voice') content = `<audio src="${data.val}" controls style="width:100%;"></audio>`;
+
+        wrapper.innerHTML = `
+            <div class="msg">${content}</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <i class="fas fa-ellipsis-h msg-options" onclick="toggleMenu('${id}')"></i>
+                <i class="fas fa-trash delete-btn" onclick="deleteMsg('${id}')"></i>
+            </div>
+        `;
+        document.getElementById('msg-container').appendChild(wrapper);
+        document.getElementById('msg-container').scrollTop = document.getElementById('msg-container').scrollHeight;
     }
 
-    function openMedia() { document.getElementById('media-input').click(); }
-
-    function sendMedia(file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const data = { type: 'media', val: e.target.result, fileType: file.type, isOneTime: file.type.includes('image') };
-            conn.send(data);
-            appendMedia(data, 'sent');
-        };
-        reader.readAsDataURL(file);
+    function toggleMenu(id) {
+        const btn = document.querySelector(`#${id} .delete-btn`);
+        btn.style.display = btn.style.display === 'block' ? 'none' : 'block';
     }
 
-    function appendMedia(data, side) {
-        const div = document.createElement('div');
-        div.className = `msg ${side}`;
-        if(data.fileType.includes('image')) {
-            const img = document.createElement('img');
-            img.src = data.val;
-            img.style.width = "100%";
-            if(data.isOneTime && side === 'received') {
-                img.className = 'one-time-img';
-                img.onclick = () => {
-                    img.style.filter = 'none';
-                    setTimeout(() => { img.remove(); div.innerText = "Şəkil silindi"; }, 5000);
-                };
-            }
-            div.appendChild(img);
-        } else {
-            const video = document.createElement('video');
-            video.src = data.val;
-            video.controls = true;
-            video.style.width = "100%";
-            div.appendChild(video);
-        }
-        document.getElementById('msg-container').appendChild(div);
+    function deleteMsg(id) {
+        document.getElementById(id).remove();
+        if(conn) conn.send({type: 'delete', id: id});
     }
 
-    // Səs Yazma
-    let recorder;
-    async function recordStart() {
+    // Səs Yazma (Basıb Saxla)
+    const voiceBtn = document.getElementById('voice-btn');
+    voiceBtn.addEventListener('mousedown', startRec);
+    voiceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRec(); });
+    window.addEventListener('mouseup', stopRec);
+    window.addEventListener('touchend', stopRec);
+
+    async function startRec() {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         recorder = new MediaRecorder(stream);
         let chunks = [];
@@ -182,38 +160,40 @@
             const blob = new Blob(chunks, { type: 'audio/ogg' });
             const reader = new FileReader();
             reader.onload = () => {
-                conn.send({ type: 'voice', val: reader.result });
-                appendVoice(reader.result, 'sent');
+                const data = { type: 'voice', val: reader.result };
+                conn.send(data);
+                appendElement(data, 'sent');
             };
             reader.readAsDataURL(blob);
         };
         recorder.start();
-        document.getElementById('voice-btn').style.background = 'red';
+        voiceBtn.classList.add('recording');
     }
 
-    function recordEnd() {
-        recorder.stop();
-        document.getElementById('voice-btn').style.background = 'var(--main-blue)';
+    function stopRec() {
+        if(recorder && recorder.state === "recording") {
+            recorder.stop();
+            voiceBtn.classList.remove('recording');
+        }
     }
 
-    function appendVoice(src, side) {
-        const div = document.createElement('div');
-        div.className = `msg ${side}`;
-        const audio = new Audio(src);
-        audio.controls = true;
-        div.appendChild(audio);
-        document.getElementById('msg-container').appendChild(div);
+    function openMedia() { document.getElementById('media-input').click(); }
+    function sendMedia(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = { type: 'media', val: e.target.result, fileType: file.type };
+            conn.send(data);
+            appendElement(data, 'sent');
+        };
+        reader.readAsDataURL(file);
     }
 
-    // Görüntülü Zəng Funksiyaları
     async function startCall() {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('local-video').srcObject = localStream;
         document.getElementById('call-screen').style.display = 'flex';
         const call = peer.call(targetId, localStream);
-        call.on('stream', remoteStream => {
-            document.getElementById('remote-video').srcObject = remoteStream;
-        });
+        call.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
         activeCall = call;
     }
 
@@ -224,43 +204,28 @@
         document.getElementById('local-video').srcObject = localStream;
         document.getElementById('call-screen').style.display = 'flex';
         activeCall.answer(localStream);
-        activeCall.on('stream', remoteStream => {
-            document.getElementById('remote-video').srcObject = remoteStream;
-        });
+        activeCall.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
     }
 
     function endCall() {
-        activeCall.close();
-        localStream.getTracks().forEach(t => t.stop());
+        if(activeCall) activeCall.close();
+        if(localStream) localStream.getTracks().forEach(t => t.stop());
         document.getElementById('call-screen').style.display = 'none';
     }
 
-    function rejectCall() {
-        document.getElementById('ringtone').pause();
-        document.getElementById('incoming-call').style.display = 'none';
-    }
+    function rejectCall() { document.getElementById('ringtone').pause(); document.getElementById('incoming-call').style.display = 'none'; }
 
-    // Mesaj göndərmə düyməsi/enter
     document.getElementById('text-input').onkeypress = (e) => {
-        if(e.key === 'Enter') {
-            const val = e.target.value;
-            if(!val) return;
-            conn.send({ type: 'text', val: val });
-            appendMsg(val, 'sent');
+        if(e.key === 'Enter' && e.target.value) {
+            const data = { type: 'text', val: e.target.value };
+            conn.send(data);
+            appendElement(data, 'sent');
             e.target.value = '';
         }
     };
 
-    // İlkin qoşulma
-    if(targetId) {
-        conn = peer.connect(targetId);
-        setupConn();
-        document.getElementById('chat-window').style.display = 'flex';
-        document.getElementById('chat-name').innerText = "ID: " + targetId;
-    }
-
+    if(targetId) { conn = peer.connect(targetId); setupConn(); document.getElementById('chat-window').style.display = 'flex'; document.getElementById('chat-name').innerText = "ID: " + targetId; }
     function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
 </script>
-
 </body>
 </html>
