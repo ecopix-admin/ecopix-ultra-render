@@ -3,260 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco Mesh - Tam P2P Messenger</title>
+    <title>Eco Mesh - Blue Edition</title>
+    
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root {
-            --wa-teal: #008069;
-            --wa-light-teal: #25D366;
-            --wa-bg: #ffffff;
-            --wa-header: #008069;
-            --wa-chat-bg: #efeae2;
+            /* MAVİ TEMALI RƏNGLƏR */
+            --em-blue: #0088cc; /* WhatsApp-ın mavi versiyası */
+            --em-dark-blue: #0077b5;
+            --em-light-blue: #e1f5fe; 
+            --em-bg: #f0f2f5; 
+            --em-sent-msg: #e3f2fd; 
+            --em-header-text: #ffffff;
+            --em-inactive-tab: rgba(255,255,255,0.7);
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background-color: var(--wa-bg); overflow: hidden; height: 100vh; }
-        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--em-bg); overflow: hidden; height: 100vh; }
+
         /* HEADER */
-        .header { background: var(--wa-header); color: white; padding: 15px 15px 5px; position: sticky; top: 0; z-index: 1000; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .header-top h2 { margin: 0; font-size: 20px; font-weight: 500; }
-        .header-icons { display: flex; gap: 20px; font-size: 18px; position: relative; }
+        .header-container { background: var(--em-blue); color: var(--em-header-text); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px 5px; }
+        .header-top h2 { margin: 0; font-size: 21px; font-weight: 600; }
+        .header-top .icons { display: flex; gap: 20px; font-size: 19px; }
         
-        /* TABS */
-        .tabs { display: flex; text-transform: uppercase; font-size: 14px; font-weight: 600; }
-        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: rgba(255,255,255,0.7); border-bottom: 3px solid transparent; }
+        .tabs { display: flex; text-transform: uppercase; font-weight: 600; font-size: 14px; padding-top: 10px; }
+        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: var(--em-inactive-tab); border-bottom: 3px solid transparent; transition: 0.3s; }
         .tab.active { color: white; border-bottom: 3px solid white; }
 
-        /* CONTENT SECTIONS */
-        .content { height: calc(100vh - 105px); overflow-y: auto; }
-        .section { display: none; }
-        .section.active { display: block; }
+        /* SECTIONS */
+        .main-section { display: none; height: calc(100vh - 105px); overflow-y: auto; background: white; }
+        .main-section.active { display: block; }
 
-        /* LIST ITEMS (CHATS, CALLS, STATUS) */
-        .item { display: flex; padding: 12px 15px; align-items: center; border-bottom: 1px solid #f2f2f2; cursor: pointer; }
-        .item:active { background: #f5f5f5; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #dfe5e7; display: flex; align-items: center; justify-content: center; margin-right: 15px; overflow: hidden; font-size: 24px; color: white; }
+        /* CHAT LIST & ITEMS */
+        .chat-item, .status-item { display: flex; padding: 12px 18px; border-bottom: 1px solid #f2f2f2; align-items: center; cursor: pointer; position: relative;}
+        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; flex-shrink: 0; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .info { flex: 1; }
-        .info h4 { margin: 0; font-size: 16px; color: #000; }
-        .info p { margin: 3px 0 0; font-size: 14px; color: #666; }
-        .time { font-size: 12px; color: #666; }
+        
+        .chat-info { flex: 1; }
+        .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .chat-top h4 { margin: 0; font-size: 16px; color: #000; }
+        .chat-time { font-size: 12px; color: #888; }
+        .chat-msg-preview { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
 
-        /* DROP DOWN MENU */
-        #menu-dropdown { position: absolute; right: 10px; top: 45px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-radius: 8px; display: none; flex-direction: column; width: 180px; z-index: 2000; overflow: hidden; }
-        .menu-item { padding: 12px 15px; color: #333; font-size: 15px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .menu-item:hover { background: #f5f5f5; }
+        /* MY ID & COPY STYLES */
+        .my-id-box { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 8px solid #f0f2f5; }
+        .id-display { display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--em-blue); font-size: 18px; }
+        .copy-btn { cursor: pointer; padding: 5px 10px; background: var(--em-light-blue); border-radius: 5px; font-size: 12px; transition: 0.2s; }
+        .copy-btn:active { background: #bbdefb; }
 
         /* CHAT WINDOW */
-        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-chat-bg); display: none; flex-direction: column; z-index: 3000; }
-        .cw-header { background: var(--wa-header); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .cw-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 15px; position: relative; }
-        .msg.sent { align-self: flex-end; background: #e7ffdb; }
-        .msg.received { align-self: flex-start; background: white; }
-        .msg-time { font-size: 10px; color: #888; text-align: right; display: block; margin-top: 4px; }
+        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #e5ddd5; display: none; flex-direction: column; z-index: 2000; }
+        .cw-header { background: var(--em-blue); color: white; padding: 10px; display: flex; align-items: center; }
+        .cw-back { font-size: 20px; padding: 10px; cursor: pointer; }
+        .cw-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
+        .msg-bubble img { max-width: 100%; border-radius: 8px; display: block; margin-top: 5px; }
+        .sent { align-self: flex-end; background: var(--em-sent-msg); border-top-right-radius: 0; }
+        .received { align-self: flex-start; background: white; border-top-left-radius: 0; }
+        .msg-time { font-size: 10px; color: #888; display: block; text-align: right; margin-top: 4px; }
 
         /* INPUT AREA */
-        .input-area { padding: 8px; display: flex; gap: 8px; align-items: center; background: #f0f0f0; }
-        .input-bar { flex: 1; background: white; border-radius: 25px; padding: 10px 15px; display: flex; align-items: center; }
-        .input-bar input { border: none; flex: 1; outline: none; font-size: 16px; }
-        .btn-round { width: 45px; height: 45px; background: var(--wa-header); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+        .cw-input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-bar { flex: 1; background: white; border-radius: 25px; display: flex; align-items: center; padding: 5px 15px; }
+        .input-bar input { flex: 1; border: none; padding: 10px; outline: none; font-size: 16px; }
+        .input-bar i { color: #888; font-size: 20px; cursor: pointer; margin-left: 10px; }
+        .send-btn { width: 45px; height: 45px; background: var(--em-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+
+        /* STATUS */
+        .status-circle { border: 2px solid var(--em-blue); padding: 2px; }
 
         /* FAB */
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--wa-light-teal); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); z-index: 100; }
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--em-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; cursor: pointer; }
 
-        /* MODAL */
-        .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 4000; align-items: center; justify-content: center; }
-        .modal { background: white; width: 85%; max-width: 300px; padding: 20px; border-radius: 12px; text-align: center; }
-        .modal input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ddd; border-radius: 5px; text-align: center; font-size: 18px; }
-        .modal-btns { display: flex; gap: 10px; }
-        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 3000; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; width: 85%; max-width: 350px; text-align: center; display: none; z-index: 3001; }
+        .modal input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center; }
+        .btn-blue { background: var(--em-blue); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+        
+        #file-input { display: none; }
+        #status-upload { display: none; }
+        #profile-upload { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
+    <div class="header-container">
         <div class="header-top">
             <h2>Eco Mesh</h2>
-            <div class="header-icons">
-                <i class="fas fa-camera"></i>
+            <div class="icons">
                 <i class="fas fa-search"></i>
-                <i class="fas fa-ellipsis-v" onclick="toggleMenu()"></i>
-                <div id="menu-dropdown">
-                    <div class="menu-item" onclick="showId()">ID-mi Göster</div>
-                    <div class="menu-item" onclick="alert('Eco Mesh v1.0 - P2P Şifrələmə aktivdir.')">Ayarlar</div>
-                    <div class="menu-item" onclick="alert('Məxfilik: Sizin məlumatlarınız heç bir serverdə saxlanılmır.')">Məxfilik Siyasəti</div>
-                </div>
+                <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('chats', this)">Söhbətlər</div>
-            <div class="tab" onclick="switchTab('status', this)">Status</div>
-            <div class="tab" onclick="switchTab('calls', this)">Zənglər</div>
+            <div class="tab active" onclick="switchTab('chats')">Söhbətlər</div>
+            <div class="tab" onclick="switchTab('status')">Status</div>
+            <div class="tab" onclick="switchTab('calls')">Zənglər</div>
         </div>
     </div>
 
-    <div class="content">
-        <div id="section-chats" class="section active"></div>
-        <div id="section-status" class="section">
-            <div class="item" onclick="addStatus()">
-                <div class="avatar" style="background: #25D366;"><i class="fas fa-plus"></i></div>
-                <div class="info"><h4>Mənim statusum</h4><p>Status yeniləməsi əlavə et</p></div>
+    <div class="main-section active" id="section-chats">
+        <div class="my-id-box">
+            <div class="id-display">
+                <span>ID:</span>
+                <span id="display-my-id">------</span>
             </div>
-            <p style="padding: 10px 15px; color: #666; font-size: 13px; font-weight: 600;">SON YENİLƏMƏLƏR</p>
-            <div id="status-list"></div>
+            <div class="copy-btn" onclick="copyMyId()">
+                <i class="fas fa-copy"></i> Kopyala
+            </div>
         </div>
-        <div id="section-calls" class="section"></div>
+        <div id="chat-list">
+            </div>
     </div>
 
-    <div class="fab" onclick="showAddContact()"><i class="fas fa-comment-alt"></i></div>
+    <div class="main-section" id="section-status">
+        <div class="status-item" onclick="triggerStatusUpload()">
+            <div class="avatar" id="my-status-avatar"><i class="fas fa-plus"></i></div>
+            <div class="chat-info">
+                <h4>Mənim statusum</h4>
+                <p>Statusa şəkil əlavə et</p>
+            </div>
+        </div>
+        <div style="padding: 10px 18px; font-size: 13px; color: var(--em-blue); font-weight: bold;">BAXILAN YENİLƏMƏLƏR</div>
+        <div id="status-list"></div>
+    </div>
+
+    <div class="main-section" id="section-calls">
+        <div style="text-align: center; margin-top: 50px; color: #888;">Zəng tarixçəsi boşdur</div>
+    </div>
+
+    <div class="fab" onclick="showAddContact()">
+        <i class="fas fa-comment-medical"></i>
+    </div>
 
     <div id="chat-window">
         <div class="cw-header">
-            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-            <div class="avatar" id="cw-avatar" style="width:35px; height:35px; margin-right:5px;"></div>
-            <div class="info"><h4 id="cw-name" style="color:white">Dost</h4><p style="color:white; font-size:12px">onlayn</p></div>
-            <i class="fas fa-video" onclick="makeCall('video')"></i>
-            <i class="fas fa-phone" onclick="makeCall('audio')" style="margin-left:15px"></i>
+            <i class="fas fa-arrow-left cw-back" onclick="closeChat()"></i>
+            <div class="avatar" style="width: 35px; height: 35px; margin-right: 10px;" id="cw-avatar"></div>
+            <div style="flex: 1">
+                <h4 id="cw-name" style="margin: 0; font-size: 16px;">Ad</h4>
+                <small id="cw-status">onlayn</small>
+            </div>
+            <div style="display: flex; gap: 20px; padding-right: 10px;">
+                <i class="fas fa-video"></i>
+                <i class="fas fa-phone"></i>
+                <i class="fas fa-user-plus" onclick="shareContact()"></i>
+            </div>
         </div>
-        <div class="cw-messages" id="cw-messages"></div>
-        <div class="input-area">
-            <div class="input-bar"><input type="text" id="msg-input" placeholder="Mesaj yazın..."></div>
-            <div class="btn-round" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></div>
+        <div class="cw-messages" id="message-container"></div>
+        <div class="cw-input-area">
+            <div class="input-bar">
+                <i class="far fa-smile"></i>
+                <input type="text" id="msg-input" placeholder="Mesaj yazın...">
+                <i class="fas fa-camera" onclick="openCamera()"></i>
+                <i class="fas fa-image" onclick="openGallery()"></i>
+            </div>
+            <div class="send-btn" onclick="handleSend()">
+                <i class="fas fa-paper-plane" id="send-icon"></i>
+            </div>
         </div>
     </div>
 
-    <div class="modal-bg" id="modal">
-        <div class="modal" id="modal-content"></div>
+    <div class="modal-overlay" id="overlay" onclick="hideModals()"></div>
+    <div class="modal" id="add-modal">
+        <h3>Yeni Söhbət</h3>
+        <p>Dostunun 6 rəqəmli ID-sini yaz:</p>
+        <input type="text" id="friend-id-input" maxlength="6" placeholder="123456">
+        <button class="btn-blue" onclick="startNewChat()">BAŞLA</button>
     </div>
+
+    <input type="file" id="file-input" accept="image/*">
+    <input type="file" id="status-upload" accept="image/*" onchange="handleStatusUpload(event)">
 
     <script>
-        const peer = new Peer();
+        const peer = new Peer(generate6DigitId());
         let myId = "";
-        let contacts = JSON.parse(localStorage.getItem('wa_contacts')) || {};
-        let activeId = null;
-        let conn = null;
+        let currentConn = null;
+        let activeChatId = null;
+        const contacts = JSON.parse(localStorage.getItem('contacts') || '{}');
+        const statuses = JSON.parse(localStorage.getItem('statuses') || '[]');
 
-        peer.on('open', id => {
-            myId = id.toString().slice(0, 6).toUpperCase();
-            console.log("Mənim ID:", myId);
-        });
-
-        peer.on('connection', c => {
-            conn = c;
-            const fid = c.peer.toString().slice(0, 6).toUpperCase();
-            if(!contacts[fid]) contacts[fid] = {id: fid, msgs: [], status: ""};
-            setupConn();
-        });
-
-        function setupConn() {
-            conn.on('data', data => {
-                const fid = conn.peer.toString().slice(0, 6).toUpperCase();
-                contacts[fid].msgs.push({type: 'received', txt: data, time: getTime()});
-                save();
-                if(activeId === fid) renderMsgs();
-                renderChats();
-            });
+        function generate6DigitId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        function switchTab(s, el) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('section-' + s).classList.add('active');
-            if(s === 'chats') renderChats();
-            if(s === 'calls') renderCalls();
+        peer.on('open', (id) => {
+            myId = id;
+            document.getElementById('display-my-id').innerText = myId;
+            renderChats();
+        });
+
+        // Mesaj gələndə
+        peer.on('connection', (conn) => {
+            conn.on('data', (data) => {
+                handleIncomingData(conn.peer, data);
+            });
+        });
+
+        function handleIncomingData(senderId, data) {
+            if(!contacts[senderId]) {
+                contacts[senderId] = { id: senderId, messages: [], avatar: `https://i.pravatar.cc/150?u=${senderId}` };
+            }
+            
+            if(data.type === 'status') {
+                statuses.unshift({ id: senderId, img: data.img, time: 'İndi' });
+                localStorage.setItem('statuses', JSON.stringify(statuses));
+                renderStatus();
+                return;
+            }
+
+            contacts[senderId].messages.push({
+                type: 'received',
+                text: data.text || null,
+                img: data.img || null,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            
+            saveAndRender();
+        }
+
+        function handleSend() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text || !currentConn) return;
+
+            const msg = { text: text, type: 'sent' };
+            currentConn.send(msg);
+            
+            contacts[activeChatId].messages.push({
+                ...msg,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            
+            input.value = "";
+            saveAndRender();
+        }
+
+        function openCamera() {
+            // TWA/Mobil üçün birbaşa kamera açılması üçün capture əlavə edilə bilər
+            document.getElementById('file-input').setAttribute('capture', 'environment');
+            document.getElementById('file-input').click();
+        }
+
+        function openGallery() {
+            document.getElementById('file-input').removeAttribute('capture');
+            document.getElementById('file-input').click();
+        }
+
+        document.getElementById('file-input').onchange = function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imgData = event.target.result;
+                if(currentConn) {
+                    currentConn.send({ img: imgData });
+                    contacts[activeChatId].messages.push({
+                        type: 'sent',
+                        img: imgData,
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    });
+                    saveAndRender();
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function triggerStatusUpload() {
+            document.getElementById('status-upload').click();
+        }
+
+        function handleStatusUpload(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = event.target.result;
+                statuses.unshift({ id: 'Mən', img: img, time: 'İndi' });
+                // P2P olduğu üçün aktiv kontaktlara statusu göndər
+                Object.keys(contacts).forEach(cid => {
+                    const conn = peer.connect(cid);
+                    conn.on('open', () => conn.send({ type: 'status', img: img }));
+                });
+                localStorage.setItem('statuses', JSON.stringify(statuses));
+                renderStatus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function shareContact() {
+            const contactInfo = `Mənim Eco Mesh ID-im: ${myId}`;
+            const input = document.getElementById('msg-input');
+            input.value = contactInfo;
+            handleSend();
+        }
+
+        function copyMyId() {
+            navigator.clipboard.writeText(myId);
+            alert("ID kopyalandı!");
         }
 
         function renderChats() {
-            const container = document.getElementById('section-chats');
-            container.innerHTML = "";
+            const list = document.getElementById('chat-list');
+            list.innerHTML = "";
             Object.values(contacts).forEach(c => {
-                const last = c.msgs[c.msgs.length-1] || {txt: "Söhbətə başla...", time: ""};
-                container.innerHTML += `
-                    <div class="item" onclick="openChat('${c.id}')">
-                        <div class="avatar"><i class="fas fa-user"></i></div>
-                        <div class="info"><h4>ID: ${c.id}</h4><p>${last.txt}</p></div>
-                        <div class="time">${last.time}</div>
-                    </div>`;
+                const lastMsg = c.messages[c.messages.length - 1];
+                const preview = lastMsg ? (lastMsg.img ? "📸 Şəkil" : lastMsg.text) : "Söhbətə başla";
+                list.innerHTML += `
+                    <div class="chat-item" onclick="openChat('${c.id}')">
+                        <div class="avatar"><img src="${c.avatar}"></div>
+                        <div class="chat-info">
+                            <div class="chat-top"><h4>ID: ${c.id}</h4><span class="chat-time">${lastMsg?.time || ''}</span></div>
+                            <div class="chat-msg-preview">${preview}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderStatus() {
+            const list = document.getElementById('status-list');
+            list.innerHTML = "";
+            statuses.forEach(s => {
+                list.innerHTML += `
+                    <div class="status-item">
+                        <div class="avatar status-circle"><img src="${s.img}"></div>
+                        <div class="chat-info">
+                            <h4>${s.id}</h4>
+                            <p>${s.time}</p>
+                        </div>
+                    </div>
+                `;
             });
         }
 
         function openChat(id) {
-            activeId = id;
+            activeChatId = id;
             document.getElementById('chat-window').style.display = 'flex';
             document.getElementById('cw-name').innerText = "ID: " + id;
-            document.getElementById('cw-avatar').innerHTML = '<i class="fas fa-user"></i>';
-            if(!conn || conn.peer !== id) {
-                conn = peer.connect(id);
-                setupConn();
-            }
-            renderMsgs();
+            document.getElementById('cw-avatar').innerHTML = `<img src="${contacts[id].avatar}">`;
+            
+            currentConn = peer.connect(id);
+            currentConn.on('open', () => {
+                document.getElementById('cw-status').innerText = "onlayn";
+            });
+            
+            renderMessages();
         }
 
-        function sendMsg() {
-            const inp = document.getElementById('msg-input');
-            if(!inp.value || !conn) return;
-            conn.send(inp.value);
-            contacts[activeId].msgs.push({type: 'sent', txt: inp.value, time: getTime()});
-            save();
-            renderMsgs();
-            inp.value = "";
-        }
-
-        function renderMsgs() {
-            const container = document.getElementById('cw-messages');
+        function renderMessages() {
+            const container = document.getElementById('message-container');
             container.innerHTML = "";
-            contacts[activeId].msgs.forEach(m => {
-                container.innerHTML += `<div class="msg ${m.type}">${m.txt}<span class="msg-time">${m.time}</span></div>`;
+            contacts[activeChatId].messages.forEach(m => {
+                const content = m.img ? `<img src="${m.img}">` : m.text;
+                container.innerHTML += `
+                    <div class="msg-bubble ${m.type}">
+                        ${content}
+                        <span class="msg-time">${m.time}</span>
+                    </div>
+                `;
             });
             container.scrollTop = container.scrollHeight;
         }
 
+        function saveAndRender() {
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            renderChats();
+            if(activeChatId) renderMessages();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.main-section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`section-${tab}`).classList.add('active');
+            if(tab === 'status') renderStatus();
+        }
+
         function showAddContact() {
-            const m = document.getElementById('modal');
-            const c = document.getElementById('modal-content');
-            m.style.display = 'flex';
-            c.innerHTML = `<h3>Yeni Söhbət</h3><input id="new-id" placeholder="6 rəqəmli ID"><div class="modal-btns">
-                <button onclick="closeModal()">Ləğv et</button>
-                <button style="background:var(--wa-header); color:white" onclick="addId()">Başla</button></div>`;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('add-modal').style.display = 'block';
         }
 
-        function addId() {
-            const id = document.getElementById('new-id').value.toUpperCase();
-            if(id.length < 5) return;
-            contacts[id] = {id: id, msgs: [], status: ""};
-            save();
-            closeModal();
-            openChat(id);
+        function hideModals() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('add-modal').style.display = 'none';
         }
 
-        function showId() {
-            toggleMenu();
-            alert("Sənin Eco Mesh ID-in: " + myId + "\nDostunla bu kodu paylaş.");
+        function startNewChat() {
+            const id = document.getElementById('friend-id-input').value;
+            if(id.length === 6) {
+                if(!contacts[id]) {
+                    contacts[id] = { id: id, messages: [], avatar: `https://i.pravatar.cc/150?u=${id}` };
+                }
+                hideModals();
+                openChat(id);
+            }
         }
 
-        function toggleMenu() {
-            const m = document.getElementById('menu-dropdown');
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+        function closeChat() {
+            document.getElementById('chat-window').style.display = 'none';
+            activeChatId = null;
         }
-
-        function makeCall(type) {
-            alert(type === 'video' ? "Görüntülü zəng başladılır..." : "Səsli zəng başladılır...");
-        }
-
-        function addStatus() {
-            const txt = prompt("Statusunuzu yazın:");
-            if(txt) alert("Status yeniləndi: " + txt);
-        }
-
-        function getTime() { return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
-        function save() { localStorage.setItem('wa_contacts', JSON.stringify(contacts)); }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function closeChat() { document.getElementById('chat-window').style.display = 'none'; renderChats(); }
-
-        renderChats();
     </script>
 </body>
 </html>
