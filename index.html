@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eco Mesh Ultra - Gaming & Chat</title>
+    <title>Eco Mesh Ultra - Stable P2P</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -11,264 +11,230 @@
         * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* Ana Səhifə Oyunlar */
-        .game-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .game-card { background: white; border-radius: 15px; padding: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
-        .game-card i { font-size: 30px; color: var(--main-blue); margin-bottom: 8px; }
+        /* Ana Səhifə Oyun Grid */
+        .game-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 100px; }
+        .game-card { background: white; border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
+        .game-card:active { transform: scale(0.95); }
+        .game-card i { font-size: 35px; color: var(--main-blue); margin-bottom: 10px; }
         
-        /* Oyun Ekranı */
-        #game-frame-overlay { position: fixed; inset: 0; background: white; z-index: 2000; display: none; flex-direction: column; }
-        iframe { flex: 1; border: none; width: 100%; }
+        /* Oyun Frame Overlay */
+        #game-frame-overlay { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
+        .game-header { background: #333; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        iframe { flex: 1; border: none; width: 100%; height: 100%; }
 
-        /* Sürüşdürmə Sonu - Giriş Bölməsi */
-        .login-section { grid-column: span 2; background: #fff; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; border: 2px dashed var(--main-blue); }
-        .my-id-box { font-size: 20px; font-weight: bold; color: var(--main-blue); margin-bottom: 10px; }
-        .id-input { width: 80%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 16px; }
+        /* Giriş Bölməsi */
+        .login-section { grid-column: span 2; background: #fff; padding: 25px; border-radius: 20px; text-align: center; border: 2px solid var(--main-blue); margin-bottom: 20px; }
+        .id-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 18px; margin: 10px 0; outline: none; }
 
-        /* Çat Pəncərəsi */
+        /* Çat və Zəng Ekranları */
         #chat-window { position: fixed; inset: 0; background: #e5ddd5; display: none; flex-direction: column; z-index: 1000; }
-        .cw-header { background: var(--main-blue); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        
-        /* Mesaj Balonları */
-        .msg-wrapper { position: relative; display: flex; flex-direction: column; max-width: 85%; }
-        .msg-wrapper.sent { align-self: flex-end; align-items: flex-end; }
-        .msg-wrapper.received { align-self: flex-start; align-items: flex-start; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg-wrapper { max-width: 85%; position: relative; margin-bottom: 5px; }
+        .sent { align-self: flex-end; } .received { align-self: flex-start; }
         .msg { padding: 10px; border-radius: 12px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .sent .msg { background: var(--sent); }
-        .delete-btn { color: red; font-size: 14px; cursor: pointer; display: none; margin-top: 5px; }
+        .delete-area { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-top: 2px; }
 
-        /* Səs Pleyeri */
-        .voice-player { display: flex; align-items: center; gap: 10px; min-width: 180px; }
-        .play-btn { background: var(--main-blue); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; }
-
-        /* Giriş/İnput */
-        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 8px; }
-        .voice-btn-active { transform: scale(1.4); background: red !important; }
-
-        /* Görüntülü Zəng 50/50 */
-        #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 3000; }
-        .video-box { flex: 1; height: 50vh; overflow: hidden; }
+        /* Video 50/50 */
+        #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 6000; }
+        .video-box { flex: 1; height: 50vh; overflow: hidden; position: relative; background: #222; }
         video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Səs Düyməsi Aktivliyi */
+        .voice-active { transform: scale(1.5); background: #ff3b30 !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body>
-
-<div class="game-container">
-    <div class="game-card" onclick="openGame('https://play2048.co/')"><i class="fas fa-th-large"></i><br>2048</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/adventure/Tetris-Mobile')"><i class="fas fa-cubes"></i><br>Tetris</div>
+<body onclick="enableAudio()"> <div class="game-container">
+    <div class="game-card" onclick="openGame('https://play2048.co/')"><i class="fas fa-grid-2"></i><br>2048</div>
+    <div class="game-card" onclick="openGame('https://tetris.com/play-tetris')"><i class="fas fa-cubes"></i><br>Tetris</div>
     <div class="game-card" onclick="openGame('https://www.google.com/logos/2010/pacman10-i.html')"><i class="fas fa-ghost"></i><br>Pac-Man</div>
-    <div class="game-card" onclick="openGame('https://snake.io/')"><i class="fas fa-snake"></i><br>Snake</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/action/Stickman-Hook')"><i class="fas fa-running"></i><br>Stickman</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/puzzle/Sudoku')"><i class="fas fa-puzzle-piece"></i><br>Sudoku</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/action/Fruit-Ninja')"><i class="fas fa-apple-alt"></i><br>Fruit Ninja</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/sports/Basketball-Stars')"><i class="fas fa-basketball-ball"></i><br>Basketbol</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/puzzle/Bubble-Shooter')"><i class="fas fa-circle"></i><br>Bubble</div>
-    <div class="game-card" onclick="openGame('https://m.plonga.com/racing/Moto-X3M')"><i class="fas fa-motorcycle"></i><br>Moto X3M</div>
+    <div class="game-card" onclick="openGame('https://poki.com/en/g/snake-is-mlg-edition')"><i class="fas fa-worm"></i><br>Snake</div>
+    <div class="game-card" onclick="openGame('https://poki.com/en/g/subway-surfers')"><i class="fas fa-subway"></i><br>Surfers</div>
+    <div class="game-card" onclick="openGame('https://www.chess.com/play/online')"><i class="fas fa-chess"></i><br>Chess</div>
 
     <div class="login-section">
-        <div class="my-id-box" id="my-id-display">ID: ------</div>
-        <i class="fas fa-ellipsis-h" onclick="showLogin()" style="cursor:pointer"></i>
-        <div id="login-form" style="display:none; margin-top:15px;">
-            <input type="number" id="friend-id" class="id-input" placeholder="Dostunun ID-si">
-            <button onclick="startChat()" style="margin-top:10px; padding:10px 20px; background:var(--main-blue); color:white; border:none; border-radius:10px;">OK</button>
-            <p id="chat-ready-msg" style="display:none; color: green; font-weight:bold; margin-top:10px;">Artıq söhbətə başlaya bilərsiz!</p>
+        <b id="my-id-label">ID-niz: Yüklənir...</b><br>
+        <i class="fas fa-ellipsis-v" onclick="toggleLogin()" style="padding: 10px; cursor:pointer;"></i>
+        <div id="login-form" style="display:none;">
+            <input type="number" id="target-id" class="id-input" placeholder="Dostunun ID-si">
+            <button onclick="connectToFriend()" style="background:var(--main-blue); color:white; border:none; padding:12px 30px; border-radius:10px; width:100%;">OK - Söhbətə başla</button>
         </div>
     </div>
 </div>
 
 <div id="game-frame-overlay">
-    <div style="padding:10px; background:var(--main-blue); color:white;" onclick="closeGame()"><i class="fas fa-times"></i> Bağla</div>
-    <iframe id="game-iframe"></iframe>
+    <div class="game-header"><span>Oyun Rejimi</span> <i class="fas fa-times" onclick="closeGame()" style="font-size:24px;"></i></div>
+    <iframe id="game-iframe" src=""></iframe>
 </div>
 
 <div id="chat-window">
-    <div class="cw-header">
+    <div style="background:var(--main-blue); color:white; padding:15px; display:flex; align-items:center; gap:15px;">
         <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-        <b id="chat-name">Dost</b>
-        <i class="fas fa-video" style="margin-left:auto" onclick="startCall()"></i>
+        <b id="chat-title">Dost</b>
+        <i class="fas fa-video" style="margin-left:auto" onclick="makeCall()"></i>
     </div>
-    <div class="messages" id="msg-container"></div>
-    <div class="input-area">
-        <button class="play-btn" onclick="openMedia()"><i class="fas fa-camera"></i></button>
-        <div style="flex:1; background:white; border-radius:20px; padding:5px 15px;">
-            <input type="text" id="text-input" placeholder="Mesaj..." style="border:none; width:100%; outline:none;">
-        </div>
-        <button id="voice-btn" class="play-btn"><i class="fas fa-microphone"></i></button>
+    <div class="messages" id="msg-box"></div>
+    <div style="padding:10px; background:#eee; display:flex; gap:10px; align-items:center;">
+        <button onclick="document.getElementById('file-in').click()" style="border:none; background:none; font-size:20px; color:var(--main-blue);"><i class="fas fa-camera"></i></button>
+        <input type="text" id="msg-input" placeholder="Mesaj..." style="flex:1; padding:10px; border-radius:20px; border:none; outline:none;">
+        <button id="voice-rec-btn" style="width:40px; height:40px; border-radius:50%; border:none; background:var(--main-blue); color:white;"><i class="fas fa-microphone"></i></button>
     </div>
 </div>
 
 <div id="call-screen">
-    <div class="video-box"><video id="remote-video" autoplay playsinline></video></div>
-    <div class="video-box"><video id="local-video" autoplay muted playsinline></video></div>
-    <div style="position:absolute; bottom:20px; width:100%; text-align:center;">
-        <button onclick="endCall()" style="background:red; color:white; border:none; padding:15px; border-radius:50%;"><i class="fas fa-phone-slash"></i></button>
+    <div class="video-box"><video id="v-remote" autoplay playsinline></video></div>
+    <div class="video-box"><video id="v-local" autoplay muted playsinline></video></div>
+    <div style="position:absolute; bottom:30px; width:100%; display:flex; justify-content:center;">
+        <button onclick="endCall()" style="background:red; width:60px; height:60px; border-radius:50%; border:none; color:white;"><i class="fas fa-phone-slash"></i></button>
     </div>
 </div>
 
-<input type="file" id="media-input" style="display:none" accept="image/*,video/*" capture="environment" onchange="sendMedia(this.files[0])">
-<audio id="msg-sound" src="https://www.soundjay.com/communication/message-marimba-alert.mp3"></audio>
-<audio id="ringtone" src="https://www.soundjay.com/phone/telephone-ring-03a.mp3" loop></audio>
+<input type="file" id="file-in" style="display:none" accept="image/*,video/*" capture="environment" onchange="sendFile(this.files[0])">
+<audio id="snd-msg" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+<audio id="snd-ring" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
 
 <script>
-    // ID-ni Yadda Saxla (LocalStorage)
-    let myId = localStorage.getItem('p2p_id');
-    if(!myId) {
-        myId = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('p2p_id', myId);
-    }
-    document.getElementById('my-id-display').innerText = "Sənin ID: " + myId;
+    let myId = localStorage.getItem('eco_p2p_id') || Math.floor(100000 + Math.random() * 900000).toString();
+    localStorage.setItem('eco_p2p_id', myId);
+    document.getElementById('my-id-label').innerText = "ID: " + myId;
 
-    const peer = new Peer(myId);
+    const peer = new Peer(myId, { debug: 2 });
     let conn, activeCall, localStream, recorder;
-    let targetId = "";
 
-    function openGame(url) {
-        document.getElementById('game-iframe').src = url;
-        document.getElementById('game-frame-overlay').style.display = 'flex';
-    }
-    function closeGame() { document.getElementById('game-frame-overlay').style.display = 'none'; }
-    function showLogin() { document.getElementById('login-form').style.display = 'block'; }
-
-    function startChat() {
-        targetId = document.getElementById('friend-id').value;
-        if(!targetId) return;
-        conn = peer.connect(targetId);
-        setupConn();
-        document.getElementById('chat-ready-msg').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('chat-name').innerText = "ID: " + targetId;
-        }, 1500);
+    function enableAudio() { 
+        document.getElementById('snd-msg').load(); 
+        document.getElementById('snd-ring').load(); 
     }
 
-    peer.on('connection', c => { conn = c; setupConn(); document.getElementById('chat-window').style.display = 'flex'; });
-    peer.on('call', call => { 
-        activeCall = call; 
-        document.getElementById('ringtone').play();
-        if(confirm("Görüntülü zəng gəlir. Cavab verilsin?")) acceptCall();
-        else rejectCall();
+    function openGame(url) { 
+        document.getElementById('game-iframe').src = url; 
+        document.getElementById('game-frame-overlay').style.display = 'flex'; 
+    }
+    function closeGame() { document.getElementById('game-frame-overlay').style.display = 'none'; document.getElementById('game-iframe').src = ''; }
+    function toggleLogin() { document.getElementById('login-form').style.display = 'block'; }
+
+    // Peer Hadisələri
+    peer.on('connection', c => { conn = c; handleConn(); document.getElementById('chat-window').style.display = 'flex'; });
+    peer.on('call', call => {
+        document.getElementById('snd-ring').play();
+        if(confirm("Görüntülü zəng gəlir. Cavab verilsin?")) {
+            activeCall = call;
+            answerCall();
+        } else {
+            call.close();
+            document.getElementById('snd-ring').pause();
+        }
     });
 
-    function setupConn() {
+    function connectToFriend() {
+        let tid = document.getElementById('target-id').value;
+        if(!tid) return;
+        conn = peer.connect(tid);
+        handleConn();
+        document.getElementById('chat-window').style.display = 'flex';
+    }
+
+    function handleConn() {
         conn.on('data', data => {
-            if(data.type === 'delete') { document.getElementById(data.id)?.remove(); return; }
-            document.getElementById('msg-sound').play();
-            appendMsg(data, 'received');
+            if(data.type === 'del') { document.getElementById(data.id)?.remove(); return; }
+            document.getElementById('snd-msg').play();
+            renderMsg(data, 'received');
         });
     }
 
-    function appendMsg(data, side) {
-        const id = "msg-" + Date.now();
-        const wrapper = document.createElement('div');
-        wrapper.className = `msg-wrapper ${side}`;
-        wrapper.id = id;
+    function renderMsg(data, side) {
+        const mid = "m-" + Date.now();
+        const div = document.createElement('div');
+        div.className = `msg-wrapper ${side}`;
+        div.id = mid;
+        
+        let html = '';
+        if(data.type === 'text') html = data.val;
+        else if(data.type === 'img') html = `<img src="${data.val}" style="width:100%; border-radius:10px;">`;
+        else if(data.type === 'vid') html = `<video src="${data.val}" controls style="width:100%; border-radius:10px;"></video>`;
+        else if(data.type === 'aud') html = `<div style="display:flex; align-items:center; gap:10px;"><button onclick="playAud(this, '${data.val}')" style="border:none; background:var(--main-blue); color:white; border-radius:50%; width:30px; height:30px;"><i class="fas fa-play"></i></button> Səsli Mesaj</div>`;
 
-        let content = '';
-        if(data.type === 'text') content = data.val;
-        else if(data.type === 'media' && data.fileType.includes('image')) content = `<img src="${data.val}" style="width:100%; border-radius:10px;">`;
-        else if(data.type === 'media') content = `<video src="${data.val}" controls style="width:100%; border-radius:10px;"></video>`;
-        else if(data.type === 'voice') content = `
-            <div class="voice-player">
-                <button class="play-btn" onclick="playVoice(this, '${data.val}')"><i class="fas fa-play"></i></button>
-                <span>Səsli mesaj</span>
-            </div>`;
-
-        wrapper.innerHTML = `<div class="msg">${content}</div><i class="fas fa-ellipsis-h" onclick="showDelete('${id}')" style="font-size:10px; color:#999;"></i><div class="delete-btn" onclick="deleteMsg('${id}')"><i class="fas fa-trash"></i> Sil</div>`;
-        document.getElementById('msg-container').appendChild(wrapper);
-        document.getElementById('msg-container').scrollTop = document.getElementById('msg-container').scrollHeight;
-    }
-
-    function showDelete(id) {
-        const btn = document.querySelector(`#${id} .delete-btn`);
-        btn.style.display = btn.style.display === 'block' ? 'none' : 'block';
+        div.innerHTML = `<div class="msg">${html}</div><div class="delete-area" onclick="deleteMsg('${mid}')"><i class="fas fa-trash"></i> Sil</div>`;
+        document.getElementById('msg-box').appendChild(div);
+        document.getElementById('msg-box').scrollTop = document.getElementById('msg-box').scrollHeight;
     }
 
     function deleteMsg(id) {
         document.getElementById(id).remove();
-        if(conn) conn.send({type: 'delete', id: id});
+        if(conn) conn.send({type: 'del', id: id});
     }
 
-    function playVoice(btn, src) {
-        const audio = new Audio(src);
-        if(btn.firstChild.className === "fas fa-play") {
-            audio.play();
-            btn.firstChild.className = "fas fa-pause";
-            audio.onended = () => btn.firstChild.className = "fas fa-play";
-        } else {
-            audio.pause();
-            btn.firstChild.className = "fas fa-play";
-        }
+    function playAud(btn, src) {
+        const a = new Audio(src);
+        a.play(); btn.innerHTML = '<i class="fas fa-pause"></i>';
+        a.onended = () => btn.innerHTML = '<i class="fas fa-play"></i>';
     }
 
-    // Basıb Saxla Səs Yazma
-    const vBtn = document.getElementById('voice-btn');
+    // Səs Yazma (Basıb Saxla)
+    const vBtn = document.getElementById('voice-rec-btn');
     vBtn.onmousedown = vBtn.ontouchstart = async (e) => {
         e.preventDefault();
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         recorder = new MediaRecorder(stream);
         let chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.ondataavailable = ev => chunks.push(ev.data);
         recorder.onstop = () => {
             const blob = new Blob(chunks, { type: 'audio/ogg' });
             const reader = new FileReader();
             reader.onload = () => {
-                const data = { type: 'voice', val: reader.result };
-                conn.send(data); appendMsg(data, 'sent');
+                const d = { type: 'aud', val: reader.result };
+                conn.send(d); renderMsg(d, 'sent');
             };
             reader.readAsDataURL(blob);
         };
         recorder.start();
-        vBtn.classList.add('voice-btn-active');
+        vBtn.classList.add('voice-active');
     };
     window.onmouseup = window.ontouchend = () => {
-        if(recorder && recorder.state === "recording") {
-            recorder.stop();
-            vBtn.classList.remove('voice-btn-active');
-        }
+        if(recorder && recorder.state === 'recording') { recorder.stop(); vBtn.classList.remove('voice-active'); }
     };
 
-    function openMedia() { document.getElementById('media-input').click(); }
-    function sendMedia(file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const data = { type: 'media', val: e.target.result, fileType: file.type };
-            conn.send(data); appendMsg(data, 'sent');
+    function sendFile(file) {
+        const r = new FileReader();
+        r.onload = e => {
+            const d = { type: file.type.includes('image') ? 'img' : 'vid', val: e.target.result };
+            conn.send(d); renderMsg(d, 'sent');
         };
-        reader.readAsDataURL(file);
+        r.readAsDataURL(file);
     }
 
-    async function startCall() {
+    async function makeCall() {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('v-local').srcObject = localStream;
         document.getElementById('call-screen').style.display = 'flex';
-        activeCall = peer.call(targetId, localStream);
-        activeCall.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+        activeCall = peer.call(conn.peer, localStream);
+        activeCall.on('stream', s => document.getElementById('v-remote').srcObject = s);
     }
 
-    async function acceptCall() {
-        document.getElementById('ringtone').pause();
+    async function answerCall() {
+        document.getElementById('snd-ring').pause();
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('local-video').srcObject = localStream;
+        document.getElementById('v-local').srcObject = localStream;
         document.getElementById('call-screen').style.display = 'flex';
         activeCall.answer(localStream);
-        activeCall.on('stream', rs => document.getElementById('remote-video').srcObject = rs);
+        activeCall.on('stream', s => document.getElementById('v-remote').srcObject = s);
     }
 
     function endCall() {
         if(activeCall) activeCall.close();
         if(localStream) localStream.getTracks().forEach(t => t.stop());
         document.getElementById('call-screen').style.display = 'none';
+        document.getElementById('snd-ring').pause();
     }
 
     function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
-    document.getElementById('text-input').onkeypress = (e) => {
+    document.getElementById('msg-input').onkeypress = e => {
         if(e.key === 'Enter' && e.target.value) {
-            const data = { type: 'text', val: e.target.value };
-            conn.send(data); appendMsg(data, 'sent');
-            e.target.value = '';
+            const d = { type: 'text', val: e.target.value };
+            conn.send(d); renderMsg(d, 'sent'); e.target.value = '';
         }
-    };
+    }
 </script>
 </body>
 </html>
