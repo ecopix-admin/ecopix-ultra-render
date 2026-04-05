@@ -2,126 +2,165 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TeleMarket PRO</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Mesh - WhatsApp Style</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
-        .main-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .main-container::-webkit-scrollbar { display: none; }
-        .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Şəkillər üçün Swiper lazımdırsa bura CSS əlavə edə bilərik */
-        
-        .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%, transparent 70%, rgba(0,0,0,0.5) 100%); pointer-events: none; }
-        
-        /* Sağ tərəf düymələri - Yuxarı qaldırıldı */
-        .side-bar { position: absolute; right: 15px; bottom: 180px; display: flex; flex-direction: column; gap: 18px; z-index: 50; }
-        .action-btn { width: 55px; height: 55px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; color: white; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
-        .btn-label { font-size: 10px; margin-top: 2px; font-weight: 500; }
+        :root {
+            --wa-green: #075E54;
+            --wa-light-green: #25D366;
+            --wa-bg: #ece5dd;
+            --wa-white: #ffffff;
+        }
 
-        /* Məlumat bölməsi - Alt menyudan yuxarı çəkildi */
-        .info-box { position: absolute; bottom: 165px; left: 15px; right: 90px; color: white; z-index: 40; }
-        .price-tag { background: #16a34a; color: white; padding: 6px 14px; border-radius: 6px; font-weight: 900; font-size: 18px; display: inline-block; margin-bottom: 10px; }
-        .badge-new { background: rgba(255,255,255,0.2); font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f0f2f5; }
         
-        .detail-btn { background: white; color: black; padding: 14px; border-radius: 12px; font-weight: 900; width: 100%; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        /* Header */
+        .header { background: var(--wa-green); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header h2 { margin: 0; font-size: 20px; }
 
-        /* Modal */
-        #modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+        /* Tabs */
+        .tabs { background: var(--wa-green); display: flex; color: rgba(255,255,255,0.6); text-transform: uppercase; font-weight: bold; font-size: 14px; }
+        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; }
+        .tab.active { color: white; border-bottom: 3px solid white; }
+
+        /* User ID Bar */
+        .my-id-bar { background: #fff; padding: 10px; text-align: center; border-bottom: 1px solid #ddd; font-size: 13px; color: #666; }
+        #my-id { font-weight: bold; color: var(--wa-green); }
+
+        /* Chat List */
+        .chat-list { background: white; height: calc(100vh - 150px); overflow-y: auto; }
+        .chat-item { display: flex; padding: 15px; border-bottom: 1px solid #f2f2f2; align-items: center; cursor: pointer; }
+        .chat-avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .chat-info { flex: 1; }
+        .chat-info h4 { margin: 0; font-size: 16px; color: #000; }
+        .chat-info p { margin: 5px 0 0; font-size: 13px; color: #666; }
+
+        /* Floating Action Button */
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--wa-light-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
+
+        /* Chat Window (Hidden by default) */
+        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); display: none; flex-direction: column; z-index: 200; }
+        .chat-header { background: var(--wa-green); color: white; padding: 10px; display: flex; align-items: center; }
+        .back-btn { margin-right: 15px; cursor: pointer; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 15px; position: relative; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; }
+        .msg.received { align-self: flex-start; background: white; }
+
+        .input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; }
+        .input-area input { flex: 1; border: none; padding: 10px; border-radius: 20px; margin: 0 10px; outline: none; }
+        .send-btn { color: var(--wa-green); font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="main-container" id="feed"></div>
+<div class="header">
+    <h2>Eco Mesh</h2>
+    <div>
+        <i class="fas fa-search" style="margin-right: 20px;"></i>
+        <i class="fas fa-ellipsis-v"></i>
+    </div>
+</div>
 
-    <div class="fixed bottom-0 left-0 w-full h-[90px] bg-black border-t border-white/5 flex justify-around items-center z-[100] pb-6 px-2">
-        <div class="flex flex-col items-center text-white"><i class="fas fa-home text-2xl"></i><span class="text-[10px] mt-1 font-medium">Əsas</span></div>
-        <div class="flex flex-col items-center text-gray-500"><i class="fas fa-search text-2xl"></i><span class="text-[10px] mt-1 font-medium">Axtar</span></div>
-        <div class="bg-blue-600 w-[60px] h-[45px] rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/30"><i class="fas fa-plus"></i></div>
-        <div class="flex flex-col items-center text-gray-500"><i class="fas fa-heart text-2xl"></i><span class="text-[10px] mt-1 font-medium">Seçilmişlər</span></div>
-        <div class="flex flex-col items-center text-gray-500"><i class="fas fa-user text-2xl"></i><span class="text-[10px] mt-1 font-medium">Profil</span></div>
+<div class="tabs">
+    <div class="tab active">Söhbətlər</div>
+    <div class="tab">Status</div>
+    <div class="tab">Zənglər</div>
+</div>
+
+<div class="my-id-bar">Sənin ID: <span id="my-id">Yüklənir...</span></div>
+
+<div class="chat-list" id="chat-list">
     </div>
 
-    <div id="modal" onclick="closeModal()">
-        <div class="flex items-end justify-center h-full">
-            <div class="bg-white w-full rounded-t-[40px] p-8 pb-14 animate-slide-up relative" onclick="event.stopPropagation()">
-                <button onclick="closeModal()" class="absolute right-6 top-6 text-gray-400 text-xl"><i class="fas fa-times"></i></button>
-                <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8"></div>
-                <div id="modalBody"></div>
-            </div>
-        </div>
+<div class="fab" onclick="addNewContact()">
+    <i class="fas fa-comment-dots"></i>
+</div>
+
+<div id="chat-window">
+    <div class="chat-header">
+        <i class="fas fa-arrow-left back-btn" onclick="closeChat()"></i>
+        <div class="chat-avatar" style="width: 35px; height: 35px; margin-right: 10px;"><i class="fas fa-user"></i></div>
+        <h4 id="chat-with-name">Dost</h4>
     </div>
+    <div id="messages"></div>
+    <div class="input-area">
+        <i class="far fa-smile"></i>
+        <input type="text" id="msg-input" placeholder="Mesaj yazın...">
+        <i class="fas fa-paperclip" style="margin-right: 15px; color: #666;"></i>
+        <div class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></div>
+    </div>
+</div>
 
-    <script>
-        const ads = [
-            { video: 'https://assets.mixkit.co/videos/preview/mixkit-close-up-of-a-person-holding-an-iphone-34444-large.mp4', title: 'iPhone 15 Pro Max', price: '2450', desc: 'Ölçü 256GB. Blue Titanium. Qarantiya davam edir. Bakı, Nərimanov.', tel: '994501112233', wp: '994501112233' },
-            { video: 'https://assets.mixkit.co/videos/preview/mixkit-fast-pacing-running-shoes-in-a-field-34568-large.mp4', title: 'Nike Air Max 270', price: '180', desc: 'Ölçü 43. Cəmi 2 dəfə geyinilib. Xaricdən alınıb. Orijinal qutusunda təqdim olunur.', tel: '994505554433', wp: '994505554433' }
-        ];
+<script>
+    const peer = new Peer();
+    let currentConn = null;
 
-        function renderAds() {
-            const container = document.getElementById('feed');
-            ads.forEach((ad, i) => {
-                const section = `
-                <div class="snap-section">
-                    <video loop muted playsinline onclick="this.paused?this.play():this.pause()"><source src="${ad.video}"></video>
-                    <div class="overlay"></div>
-                    
-                    <div class="side-bar">
-                        <button class="action-btn" onclick="this.style.color='red'"><i class="fas fa-heart"></i><span class="btn-label">Bəyən</span></button>
-                        <button class="action-btn" onclick="shareAd('${ad.title}', '${ad.price}')"><i class="fas fa-share"></i><span class="btn-label">Paylaş</span></button>
-                        <a href="https://wa.me/${ad.wp}" class="action-btn text-green-500"><i class="fab fa-whatsapp text-3xl"></i></a>
-                        <a href="tel:${ad.tel}" class="action-btn text-blue-500"><i class="fas fa-phone text-2xl"></i></a>
-                    </div>
+    peer.on('open', id => {
+        document.getElementById('my-id').innerText = id;
+    });
 
-                    <div class="info-box">
-                        <div class="flex items-center">
-                            <div class="price-tag">${ad.price} AZN</div>
-                            <span class="badge-new font-bold">YENİ</span>
-                        </div>
-                        <h2 class="text-2xl font-bold mt-1">${ad.title}</h2>
-                        <p class="text-gray-300 text-sm opacity-80 mt-1">Bakı, Nərimanov • 2 saat əvvəl</p>
-                        <button onclick="openModal(${i})" class="detail-btn active:scale-95 transition">
-                            <i class="fas fa-info-circle"></i> Ətraflı Məlumat
-                        </button>
-                    </div>
-                </div>`;
-                container.insertAdjacentHTML('beforeend', section);
-            });
-        }
-
-        function openModal(index) {
-            const ad = ads[index];
-            document.getElementById('modalBody').innerHTML = `
-                <h3 class="text-3xl font-black text-gray-900 mb-2">${ad.title}</h3>
-                <div class="text-green-600 text-3xl font-black mb-6">${ad.price} AZN</div>
-                <p class="text-gray-500 text-lg leading-relaxed mb-10 font-medium">${ad.desc}</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <a href="tel:${ad.tel}" class="bg-blue-600 text-white py-5 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg"><i class="fas fa-phone"></i> Zəng Et</a>
-                    <a href="https://wa.me/${ad.wp}" class="bg-green-500 text-white py-5 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-whatsapp text-2xl"></i> Yaz</a>
+    // Kontakt əlavə etmək funksiyası
+    function addNewContact() {
+        const friendId = prompt("Dostunun ID-sini daxil et:");
+        if (friendId) {
+            const list = document.getElementById('chat-list');
+            const item = document.createElement('div');
+            item.className = 'chat-item';
+            item.innerHTML = `
+                <div class="chat-avatar"><i class="fas fa-user"></i></div>
+                <div class="chat-info">
+                    <h4>ID: ${friendId}</h4>
+                    <p>Söhbətə başlamaq üçün klikləyin</p>
                 </div>
             `;
-            document.getElementById('modal').style.display = 'block';
+            item.onclick = () => openChat(friendId);
+            list.appendChild(item);
         }
+    }
 
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    function openChat(id) {
+        document.getElementById('chat-window').style.display = 'flex';
+        document.getElementById('chat-with-name').innerText = "ID: " + id;
+        currentConn = peer.connect(id);
         
-        function shareAd(title, price) {
-            if (navigator.share) {
-                navigator.share({ title: 'TeleMarket', text: `${title} - ${price} AZN. Bax:`, url: window.location.href });
-            }
+        currentConn.on('open', () => {
+            console.log("Qoşuldu!");
+        });
+    }
+
+    function closeChat() {
+        document.getElementById('chat-window').style.display = 'none';
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('msg-input');
+        const msg = input.value;
+        if (msg && currentConn) {
+            currentConn.send(msg);
+            displayMessage(msg, 'sent');
+            input.value = '';
         }
+    }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
-        }, { threshold: 0.6 });
+    peer.on('connection', conn => {
+        currentConn = conn;
+        conn.on('data', data => {
+            displayMessage(data, 'received');
+            document.getElementById('chat-window').style.display = 'flex';
+        });
+    });
 
-        window.onload = () => {
-            renderAds();
-            document.querySelectorAll('video').forEach(v => observer.observe(v));
-        };
-    </script>
+    function displayMessage(msg, type) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerText = msg;
+        document.getElementById('messages').appendChild(div);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+    }
+</script>
+
 </body>
 </html>
