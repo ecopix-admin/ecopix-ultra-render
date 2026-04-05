@@ -3,103 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco Mesh - Blue Edition</title>
+    <title>Eco Mesh - Voice & Delete Support</title>
     
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         :root {
-            /* MAVİ TEMALI RƏNGLƏR */
-            --em-blue: #0088cc; /* WhatsApp-ın mavi versiyası */
-            --em-dark-blue: #0077b5;
+            --em-blue: #0088cc;
             --em-light-blue: #e1f5fe; 
             --em-bg: #f0f2f5; 
             --em-sent-msg: #e3f2fd; 
             --em-header-text: #ffffff;
-            --em-inactive-tab: rgba(255,255,255,0.7);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--em-bg); overflow: hidden; height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--em-bg); overflow: hidden; height: 100vh; }
 
-        /* HEADER */
-        .header-container { background: var(--em-blue); color: var(--em-header-text); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-container { background: var(--em-blue); color: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px 5px; }
-        .header-top h2 { margin: 0; font-size: 21px; font-weight: 600; }
-        .header-top .icons { display: flex; gap: 20px; font-size: 19px; }
-        
         .tabs { display: flex; text-transform: uppercase; font-weight: 600; font-size: 14px; padding-top: 10px; }
-        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: var(--em-inactive-tab); border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: rgba(255,255,255,0.7); border-bottom: 3px solid transparent; }
         .tab.active { color: white; border-bottom: 3px solid white; }
 
-        /* SECTIONS */
         .main-section { display: none; height: calc(100vh - 105px); overflow-y: auto; background: white; }
         .main-section.active { display: block; }
 
-        /* CHAT LIST & ITEMS */
-        .chat-item, .status-item { display: flex; padding: 12px 18px; border-bottom: 1px solid #f2f2f2; align-items: center; cursor: pointer; position: relative;}
-        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; flex-shrink: 0; }
+        .chat-item { display: flex; padding: 12px 18px; border-bottom: 1px solid #f2f2f2; align-items: center; cursor: pointer; }
+        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; flex-shrink: 0; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
         
-        .chat-info { flex: 1; }
-        .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .chat-top h4 { margin: 0; font-size: 16px; color: #000; }
-        .chat-time { font-size: 12px; color: #888; }
-        .chat-msg-preview { font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
-
-        /* MY ID & COPY STYLES */
         .my-id-box { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 8px solid #f0f2f5; }
-        .id-display { display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--em-blue); font-size: 18px; }
-        .copy-btn { cursor: pointer; padding: 5px 10px; background: var(--em-light-blue); border-radius: 5px; font-size: 12px; transition: 0.2s; }
-        .copy-btn:active { background: #bbdefb; }
-
+        
         /* CHAT WINDOW */
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #e5ddd5; display: none; flex-direction: column; z-index: 2000; }
         .cw-header { background: var(--em-blue); color: white; padding: 10px; display: flex; align-items: center; }
-        .cw-back { font-size: 20px; padding: 10px; cursor: pointer; }
         .cw-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         
-        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; }
-        .msg-bubble img { max-width: 100%; border-radius: 8px; display: block; margin-top: 5px; }
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; cursor: pointer; transition: background 0.2s; }
+        .msg-bubble.selected { background: rgba(0, 136, 204, 0.3) !important; }
         .sent { align-self: flex-end; background: var(--em-sent-msg); border-top-right-radius: 0; }
         .received { align-self: flex-start; background: white; border-top-left-radius: 0; }
-        .msg-time { font-size: 10px; color: #888; display: block; text-align: right; margin-top: 4px; }
 
-        /* INPUT AREA */
+        /* AUDIO PLAYER STYLES */
+        .audio-container { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+        .audio-btn { font-size: 20px; color: var(--em-blue); cursor: pointer; }
+
         .cw-input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; }
         .input-bar { flex: 1; background: white; border-radius: 25px; display: flex; align-items: center; padding: 5px 15px; }
-        .input-bar input { flex: 1; border: none; padding: 10px; outline: none; font-size: 16px; }
-        .input-bar i { color: #888; font-size: 20px; cursor: pointer; margin-left: 10px; }
+        .input-bar input { flex: 1; border: none; padding: 10px; outline: none; }
         .send-btn { width: 45px; height: 45px; background: var(--em-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+        .recording-active { background: #ff3b30 !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        /* STATUS */
-        .status-circle { border: 2px solid var(--em-blue); padding: 2px; }
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--em-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 100; cursor: pointer; }
 
-        /* FAB */
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--em-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; cursor: pointer; }
-
-        /* MODALS */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 3000; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; width: 85%; max-width: 350px; text-align: center; display: none; z-index: 3001; }
-        .modal input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center; }
-        .btn-blue { background: var(--em-blue); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
-        
-        #file-input { display: none; }
-        #status-upload { display: none; }
-        #profile-upload { display: none; }
+        .delete-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--em-blue); color: white; display: none; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 3000; }
     </style>
 </head>
 <body>
 
+    <div id="delete-bar" class="delete-overlay">
+        <span id="delete-count">1 seçildi</span>
+        <i class="fas fa-trash" onclick="confirmDelete()"></i>
+    </div>
+
     <div class="header-container">
-        <div class="header-top">
-            <h2>Eco Mesh</h2>
-            <div class="icons">
-                <i class="fas fa-search"></i>
-                <i class="fas fa-ellipsis-v"></i>
-            </div>
-        </div>
+        <div class="header-top"><h2>Eco Mesh</h2><div class="icons"><i class="fas fa-search"></i><i class="fas fa-ellipsis-v"></i></div></div>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('chats')">Söhbətlər</div>
             <div class="tab" onclick="switchTab('status')">Status</div>
@@ -109,306 +79,201 @@
 
     <div class="main-section active" id="section-chats">
         <div class="my-id-box">
-            <div class="id-display">
-                <span>ID:</span>
-                <span id="display-my-id">------</span>
-            </div>
-            <div class="copy-btn" onclick="copyMyId()">
-                <i class="fas fa-copy"></i> Kopyala
-            </div>
+            <div>ID: <span id="display-my-id" style="font-weight:bold; color:var(--em-blue)">------</span></div>
+            <div onclick="copyMyId()" style="cursor:pointer; color:var(--em-blue)"><i class="fas fa-copy"></i> Kopyala</div>
         </div>
-        <div id="chat-list">
-            </div>
-    </div>
-
-    <div class="main-section" id="section-status">
-        <div class="status-item" onclick="triggerStatusUpload()">
-            <div class="avatar" id="my-status-avatar"><i class="fas fa-plus"></i></div>
-            <div class="chat-info">
-                <h4>Mənim statusum</h4>
-                <p>Statusa şəkil əlavə et</p>
-            </div>
-        </div>
-        <div style="padding: 10px 18px; font-size: 13px; color: var(--em-blue); font-weight: bold;">BAXILAN YENİLƏMƏLƏR</div>
-        <div id="status-list"></div>
-    </div>
-
-    <div class="main-section" id="section-calls">
-        <div style="text-align: center; margin-top: 50px; color: #888;">Zəng tarixçəsi boşdur</div>
-    </div>
-
-    <div class="fab" onclick="showAddContact()">
-        <i class="fas fa-comment-medical"></i>
+        <div id="chat-list"></div>
     </div>
 
     <div id="chat-window">
         <div class="cw-header">
-            <i class="fas fa-arrow-left cw-back" onclick="closeChat()"></i>
-            <div class="avatar" style="width: 35px; height: 35px; margin-right: 10px;" id="cw-avatar"></div>
-            <div style="flex: 1">
-                <h4 id="cw-name" style="margin: 0; font-size: 16px;">Ad</h4>
-                <small id="cw-status">onlayn</small>
-            </div>
-            <div style="display: flex; gap: 20px; padding-right: 10px;">
-                <i class="fas fa-video"></i>
-                <i class="fas fa-phone"></i>
-                <i class="fas fa-user-plus" onclick="shareContact()"></i>
-            </div>
+            <i class="fas fa-arrow-left" style="padding:10px" onclick="closeChat()"></i>
+            <div class="avatar" style="width:35px; height:35px; margin-right:10px" id="cw-avatar"></div>
+            <div style="flex:1"><h4 id="cw-name" style="margin:0">Ad</h4><small>onlayn</small></div>
+            <i class="fas fa-video" style="margin-right:15px"></i>
+            <i class="fas fa-phone"></i>
         </div>
         <div class="cw-messages" id="message-container"></div>
         <div class="cw-input-area">
             <div class="input-bar">
                 <i class="far fa-smile"></i>
-                <input type="text" id="msg-input" placeholder="Mesaj yazın...">
-                <i class="fas fa-camera" onclick="openCamera()"></i>
-                <i class="fas fa-image" onclick="openGallery()"></i>
+                <input type="text" id="msg-input" placeholder="Mesaj yazın..." oninput="toggleIcon()">
+                <i class="fas fa-camera" onclick="document.getElementById('file-input').click()"></i>
             </div>
-            <div class="send-btn" onclick="handleSend()">
-                <i class="fas fa-paper-plane" id="send-icon"></i>
+            <div class="send-btn" id="voice-send-btn" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+                <i class="fas fa-microphone" id="main-icon"></i>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="overlay" onclick="hideModals()"></div>
-    <div class="modal" id="add-modal">
-        <h3>Yeni Söhbət</h3>
-        <p>Dostunun 6 rəqəmli ID-sini yaz:</p>
-        <input type="text" id="friend-id-input" maxlength="6" placeholder="123456">
-        <button class="btn-blue" onclick="startNewChat()">BAŞLA</button>
-    </div>
-
-    <input type="file" id="file-input" accept="image/*">
-    <input type="file" id="status-upload" accept="image/*" onchange="handleStatusUpload(event)">
+    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleImage(event)">
 
     <script>
-        const peer = new Peer(generate6DigitId());
+        let peer = new Peer(Math.floor(100000 + Math.random() * 900000).toString());
         let myId = "";
         let currentConn = null;
         let activeChatId = null;
+        let mediaRecorder;
+        let audioChunks = [];
+        let selectedItem = null;
+        let deleteType = ''; // 'message' or 'chat'
+
         const contacts = JSON.parse(localStorage.getItem('contacts') || '{}');
-        const statuses = JSON.parse(localStorage.getItem('statuses') || '[]');
 
-        function generate6DigitId() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        peer.on('open', (id) => {
-            myId = id;
-            document.getElementById('display-my-id').innerText = myId;
-            renderChats();
-        });
-
-        // Mesaj gələndə
-        peer.on('connection', (conn) => {
-            conn.on('data', (data) => {
-                handleIncomingData(conn.peer, data);
+        peer.on('open', id => { myId = id; document.getElementById('display-my-id').innerText = myId; renderChats(); });
+        peer.on('connection', conn => {
+            conn.on('data', data => {
+                if(!contacts[conn.peer]) contacts[conn.peer] = { id: conn.peer, messages: [], avatar: `https://i.pravatar.cc/150?u=${conn.peer}` };
+                contacts[conn.peer].messages.push({...data, type:'received', time: getTime()});
+                saveAndRender();
             });
         });
 
-        function handleIncomingData(senderId, data) {
-            if(!contacts[senderId]) {
-                contacts[senderId] = { id: senderId, messages: [], avatar: `https://i.pravatar.cc/150?u=${senderId}` };
-            }
-            
-            if(data.type === 'status') {
-                statuses.unshift({ id: senderId, img: data.img, time: 'İndi' });
-                localStorage.setItem('statuses', JSON.stringify(statuses));
-                renderStatus();
-                return;
-            }
+        function getTime() { return new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
 
-            contacts[senderId].messages.push({
-                type: 'received',
-                text: data.text || null,
-                img: data.img || null,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            
+        // --- SƏS YAZMA ---
+        async function startRecording() {
+            if (document.getElementById('msg-input').value.trim() !== "") return;
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => sendMedia({ audio: reader.result });
+            };
+            mediaRecorder.start();
+            document.getElementById('voice-send-btn').classList.add('recording-active');
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                document.getElementById('voice-send-btn').classList.remove('recording-active');
+            } else if (document.getElementById('msg-input').value.trim() !== "") {
+                handleTextSend();
+            }
+        }
+
+        function handleTextSend() {
+            const val = document.getElementById('msg-input').value;
+            sendMedia({ text: val });
+            document.getElementById('msg-input').value = "";
+            toggleIcon();
+        }
+
+        function sendMedia(data) {
+            if(!currentConn) return;
+            currentConn.send(data);
+            contacts[activeChatId].messages.push({...data, type:'sent', time: getTime()});
             saveAndRender();
         }
 
-        function handleSend() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if(!text || !currentConn) return;
+        function handleImage(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = event => sendMedia({ img: event.target.result });
+            reader.readAsDataURL(file);
+        }
 
-            const msg = { text: text, type: 'sent' };
-            currentConn.send(msg);
-            
-            contacts[activeChatId].messages.push({
-                ...msg,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            
-            input.value = "";
+        // --- SİLMƏ MEXANİZMİ ---
+        function setupLongPress(element, callback) {
+            let timer;
+            element.onmousedown = element.ontouchstart = () => timer = setTimeout(callback, 800);
+            element.onmouseup = element.ontouchend = element.onmouseleave = () => clearTimeout(timer);
+        }
+
+        function selectForDelete(id, type, index = null) {
+            selectedItem = { id, type, index };
+            document.getElementById('delete-bar').style.display = 'flex';
+            if(type === 'message') {
+                const bubbles = document.querySelectorAll('.msg-bubble');
+                bubbles[index].classList.add('selected');
+            }
+        }
+
+        function confirmDelete() {
+            if(selectedItem.type === 'chat') {
+                delete contacts[selectedItem.id];
+            } else if(selectedItem.type === 'message') {
+                contacts[selectedItem.id].messages.splice(selectedItem.index, 1);
+            }
             saveAndRender();
+            closeDeleteBar();
         }
 
-        function openCamera() {
-            // TWA/Mobil üçün birbaşa kamera açılması üçün capture əlavə edilə bilər
-            document.getElementById('file-input').setAttribute('capture', 'environment');
-            document.getElementById('file-input').click();
+        function closeDeleteBar() {
+            selectedItem = null;
+            document.getElementById('delete-bar').style.display = 'none';
+            document.querySelectorAll('.msg-bubble').forEach(b => b.classList.remove('selected'));
         }
 
-        function openGallery() {
-            document.getElementById('file-input').removeAttribute('capture');
-            document.getElementById('file-input').click();
-        }
-
-        document.getElementById('file-input').onchange = function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const imgData = event.target.result;
-                if(currentConn) {
-                    currentConn.send({ img: imgData });
-                    contacts[activeChatId].messages.push({
-                        type: 'sent',
-                        img: imgData,
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                    });
-                    saveAndRender();
-                }
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function triggerStatusUpload() {
-            document.getElementById('status-upload').click();
-        }
-
-        function handleStatusUpload(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = event.target.result;
-                statuses.unshift({ id: 'Mən', img: img, time: 'İndi' });
-                // P2P olduğu üçün aktiv kontaktlara statusu göndər
-                Object.keys(contacts).forEach(cid => {
-                    const conn = peer.connect(cid);
-                    conn.on('open', () => conn.send({ type: 'status', img: img }));
-                });
-                localStorage.setItem('statuses', JSON.stringify(statuses));
-                renderStatus();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function shareContact() {
-            const contactInfo = `Mənim Eco Mesh ID-im: ${myId}`;
-            const input = document.getElementById('msg-input');
-            input.value = contactInfo;
-            handleSend();
-        }
-
-        function copyMyId() {
-            navigator.clipboard.writeText(myId);
-            alert("ID kopyalandı!");
-        }
-
+        // --- UI ---
         function renderChats() {
             const list = document.getElementById('chat-list');
             list.innerHTML = "";
             Object.values(contacts).forEach(c => {
-                const lastMsg = c.messages[c.messages.length - 1];
-                const preview = lastMsg ? (lastMsg.img ? "📸 Şəkil" : lastMsg.text) : "Söhbətə başla";
-                list.innerHTML += `
-                    <div class="chat-item" onclick="openChat('${c.id}')">
-                        <div class="avatar"><img src="${c.avatar}"></div>
-                        <div class="chat-info">
-                            <div class="chat-top"><h4>ID: ${c.id}</h4><span class="chat-time">${lastMsg?.time || ''}</span></div>
-                            <div class="chat-msg-preview">${preview}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderStatus() {
-            const list = document.getElementById('status-list');
-            list.innerHTML = "";
-            statuses.forEach(s => {
-                list.innerHTML += `
-                    <div class="status-item">
-                        <div class="avatar status-circle"><img src="${s.img}"></div>
-                        <div class="chat-info">
-                            <h4>${s.id}</h4>
-                            <p>${s.time}</p>
-                        </div>
-                    </div>
-                `;
+                const item = document.createElement('div');
+                item.className = 'chat-item';
+                const lastM = c.messages[c.messages.length-1];
+                item.innerHTML = `<div class="avatar"><img src="${c.avatar}"></div><div style="flex:1"><h4>${c.id}</h4><p>${lastM ? (lastM.audio ? '🎤 Səsli mesaj' : lastM.text || '📸 Şəkil') : 'Söhbət boşdur'}</p></div>`;
+                item.onclick = () => openChat(c.id);
+                setupLongPress(item, () => selectForDelete(c.id, 'chat'));
+                list.appendChild(item);
             });
         }
 
         function openChat(id) {
             activeChatId = id;
+            currentConn = peer.connect(id);
             document.getElementById('chat-window').style.display = 'flex';
             document.getElementById('cw-name').innerText = "ID: " + id;
             document.getElementById('cw-avatar').innerHTML = `<img src="${contacts[id].avatar}">`;
-            
-            currentConn = peer.connect(id);
-            currentConn.on('open', () => {
-                document.getElementById('cw-status').innerText = "onlayn";
-            });
-            
             renderMessages();
         }
 
         function renderMessages() {
             const container = document.getElementById('message-container');
             container.innerHTML = "";
-            contacts[activeChatId].messages.forEach(m => {
-                const content = m.img ? `<img src="${m.img}">` : m.text;
-                container.innerHTML += `
-                    <div class="msg-bubble ${m.type}">
-                        ${content}
-                        <span class="msg-time">${m.time}</span>
-                    </div>
-                `;
+            contacts[activeChatId].messages.forEach((m, i) => {
+                const div = document.createElement('div');
+                div.className = `msg-bubble ${m.type}`;
+                
+                if(m.audio) {
+                    div.innerHTML = `<div class="audio-container"><i class="fas fa-play audio-btn" onclick="playAudio('${m.audio}', this)"></i><div style="height:3px; background:#ccc; flex:1; border-radius:2px"></div></div>`;
+                } else if(m.img) {
+                    div.innerHTML = `<img src="${m.img}" style="max-width:100%; border-radius:8px">`;
+                } else {
+                    div.innerText = m.text;
+                }
+                div.innerHTML += `<span style="font-size:10px; color:#888; display:block; text-align:right">${m.time}</span>`;
+                
+                setupLongPress(div, () => selectForDelete(activeChatId, 'message', i));
+                container.appendChild(div);
             });
             container.scrollTop = container.scrollHeight;
         }
 
-        function saveAndRender() {
-            localStorage.setItem('contacts', JSON.stringify(contacts));
-            renderChats();
-            if(activeChatId) renderMessages();
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.main-section').forEach(s => s.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(`section-${tab}`).classList.add('active');
-            if(tab === 'status') renderStatus();
-        }
-
-        function showAddContact() {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('add-modal').style.display = 'block';
-        }
-
-        function hideModals() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('add-modal').style.display = 'none';
-        }
-
-        function startNewChat() {
-            const id = document.getElementById('friend-id-input').value;
-            if(id.length === 6) {
-                if(!contacts[id]) {
-                    contacts[id] = { id: id, messages: [], avatar: `https://i.pravatar.cc/150?u=${id}` };
-                }
-                hideModals();
-                openChat(id);
+        function playAudio(src, btn) {
+            const audio = new Audio(src);
+            if(btn.classList.contains('fa-play')) {
+                audio.play();
+                btn.className = 'fas fa-pause audio-btn';
+                audio.onended = () => btn.className = 'fas fa-play audio-btn';
+                btn.onclick = () => { audio.pause(); btn.className = 'fas fa-play audio-btn'; };
             }
         }
 
-        function closeChat() {
-            document.getElementById('chat-window').style.display = 'none';
-            activeChatId = null;
+        function toggleIcon() {
+            const icon = document.getElementById('main-icon');
+            icon.className = document.getElementById('msg-input').value.trim() ? "fas fa-paper-plane" : "fas fa-microphone";
         }
+
+        function saveAndRender() { localStorage.setItem('contacts', JSON.stringify(contacts)); renderChats(); if(activeChatId) renderMessages(); }
+        function closeChat() { document.getElementById('chat-window').style.display = 'none'; activeChatId = null; closeDeleteBar(); }
+        function copyMyId() { navigator.clipboard.writeText(myId); alert("ID kopyalandı!"); }
     </script>
 </body>
 </html>
