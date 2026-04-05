@@ -1,279 +1,216 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco Mesh - Voice & Delete Support</title>
-    
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --em-blue: #0088cc;
-            --em-light-blue: #e1f5fe; 
-            --em-bg: #f0f2f5; 
-            --em-sent-msg: #e3f2fd; 
-            --em-header-text: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlueChat PRO</title>
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--em-bg); overflow: hidden; height: 100vh; }
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
-        .header-container { background: var(--em-blue); color: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px 5px; }
-        .tabs { display: flex; text-transform: uppercase; font-weight: 600; font-size: 14px; padding-top: 10px; }
-        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: rgba(255,255,255,0.7); border-bottom: 3px solid transparent; }
-        .tab.active { color: white; border-bottom: 3px solid white; }
+<style>
+:root{
+  --blue:#0088cc;
+}
+body{margin:0;font-family:sans-serif;background:#f0f2f5}
 
-        .main-section { display: none; height: calc(100vh - 105px); overflow-y: auto; background: white; }
-        .main-section.active { display: block; }
+/* HEADER */
+.header{
+  background:var(--blue);
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
 
-        .chat-item { display: flex; padding: 12px 18px; border-bottom: 1px solid #f2f2f2; align-items: center; cursor: pointer; }
-        .avatar { width: 50px; height: 50px; background: #ccc; border-radius: 50%; margin-right: 15px; overflow: hidden; flex-shrink: 0; }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .my-id-box { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 8px solid #f0f2f5; }
-        
-        /* CHAT WINDOW */
-        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #e5ddd5; display: none; flex-direction: column; z-index: 2000; }
-        .cw-header { background: var(--em-blue); color: white; padding: 10px; display: flex; align-items: center; }
-        .cw-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        
-        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 15px; position: relative; cursor: pointer; transition: background 0.2s; }
-        .msg-bubble.selected { background: rgba(0, 136, 204, 0.3) !important; }
-        .sent { align-self: flex-end; background: var(--em-sent-msg); border-top-right-radius: 0; }
-        .received { align-self: flex-start; background: white; border-top-left-radius: 0; }
+/* CHAT */
+#chat{padding:10px;height:75vh;overflow:auto}
 
-        /* AUDIO PLAYER STYLES */
-        .audio-container { display: flex; align-items: center; gap: 10px; min-width: 150px; }
-        .audio-btn { font-size: 20px; color: var(--em-blue); cursor: pointer; }
+.msg{
+  padding:8px 12px;
+  margin:5px;
+  border-radius:10px;
+  max-width:70%;
+}
 
-        .cw-input-area { background: #f0f0f0; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-bar { flex: 1; background: white; border-radius: 25px; display: flex; align-items: center; padding: 5px 15px; }
-        .input-bar input { flex: 1; border: none; padding: 10px; outline: none; }
-        .send-btn { width: 45px; height: 45px; background: var(--em-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
-        .recording-active { background: #ff3b30 !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+.sent{background:#d1ecff;margin-left:auto}
+.recv{background:white}
 
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--em-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 100; cursor: pointer; }
+/* INPUT */
+.input{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  background:white;
+}
 
-        .delete-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--em-blue); color: white; display: none; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 3000; }
-    </style>
+.input input{
+  flex:1;
+  padding:15px;
+  border:none;
+}
+
+.btn{
+  background:var(--blue);
+  color:white;
+  padding:15px;
+  cursor:pointer;
+}
+
+/* CALL SCREEN */
+#call{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:black;
+}
+
+video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+#myVideo{
+  width:120px;
+  position:absolute;
+  bottom:10px;
+  right:10px;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="delete-bar" class="delete-overlay">
-        <span id="delete-count">1 seçildi</span>
-        <i class="fas fa-trash" onclick="confirmDelete()"></i>
-    </div>
+<div class="header">
+  <div>ID: <span id="id"></span></div>
+  <div>
+    <button onclick="connect()">Qoşul</button>
+    <button onclick="startCall()">📞</button>
+  </div>
+</div>
 
-    <div class="header-container">
-        <div class="header-top"><h2>Eco Mesh</h2><div class="icons"><i class="fas fa-search"></i><i class="fas fa-ellipsis-v"></i></div></div>
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('chats')">Söhbətlər</div>
-            <div class="tab" onclick="switchTab('status')">Status</div>
-            <div class="tab" onclick="switchTab('calls')">Zənglər</div>
-        </div>
-    </div>
+<div id="chat"></div>
 
-    <div class="main-section active" id="section-chats">
-        <div class="my-id-box">
-            <div>ID: <span id="display-my-id" style="font-weight:bold; color:var(--em-blue)">------</span></div>
-            <div onclick="copyMyId()" style="cursor:pointer; color:var(--em-blue)"><i class="fas fa-copy"></i> Kopyala</div>
-        </div>
-        <div id="chat-list"></div>
-    </div>
+<div class="input">
+  <input id="msg">
+  <div class="btn" onclick="send()">➤</div>
+  <div class="btn" onclick="record()">🎤</div>
+</div>
 
-    <div id="chat-window">
-        <div class="cw-header">
-            <i class="fas fa-arrow-left" style="padding:10px" onclick="closeChat()"></i>
-            <div class="avatar" style="width:35px; height:35px; margin-right:10px" id="cw-avatar"></div>
-            <div style="flex:1"><h4 id="cw-name" style="margin:0">Ad</h4><small>onlayn</small></div>
-            <i class="fas fa-video" style="margin-right:15px"></i>
-            <i class="fas fa-phone"></i>
-        </div>
-        <div class="cw-messages" id="message-container"></div>
-        <div class="cw-input-area">
-            <div class="input-bar">
-                <i class="far fa-smile"></i>
-                <input type="text" id="msg-input" placeholder="Mesaj yazın..." oninput="toggleIcon()">
-                <i class="fas fa-camera" onclick="document.getElementById('file-input').click()"></i>
-            </div>
-            <div class="send-btn" id="voice-send-btn" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
-                <i class="fas fa-microphone" id="main-icon"></i>
-            </div>
-        </div>
-    </div>
+<div id="call">
+  <video id="remoteVideo" autoplay></video>
+  <video id="myVideo" autoplay muted></video>
+  <button onclick="endCall()" style="position:absolute;bottom:20px;left:50%">❌</button>
+</div>
 
-    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleImage(event)">
+<script>
+// ID
+let myId = localStorage.getItem("id");
+if(!myId){
+  myId = Math.floor(100000+Math.random()*900000);
+  localStorage.setItem("id",myId);
+}
+document.getElementById("id").innerText = myId;
 
-    <script>
-        let peer = new Peer(Math.floor(100000 + Math.random() * 900000).toString());
-        let myId = "";
-        let currentConn = null;
-        let activeChatId = null;
-        let mediaRecorder;
-        let audioChunks = [];
-        let selectedItem = null;
-        let deleteType = ''; // 'message' or 'chat'
+// Peer
+let peer = new Peer(myId);
+let conn;
+let currentCall;
+let localStream;
 
-        const contacts = JSON.parse(localStorage.getItem('contacts') || '{}');
+// CONNECT
+function connect(){
+  let id = prompt("ID:");
+  conn = peer.connect(id);
+  conn.on("data",data=>addMsg(data,"recv"));
+}
 
-        peer.on('open', id => { myId = id; document.getElementById('display-my-id').innerText = myId; renderChats(); });
-        peer.on('connection', conn => {
-            conn.on('data', data => {
-                if(!contacts[conn.peer]) contacts[conn.peer] = { id: conn.peer, messages: [], avatar: `https://i.pravatar.cc/150?u=${conn.peer}` };
-                contacts[conn.peer].messages.push({...data, type:'received', time: getTime()});
-                saveAndRender();
-            });
-        });
+// SEND
+function send(){
+  let val = document.getElementById("msg").value;
+  conn.send(val);
+  addMsg(val,"sent");
+}
 
-        function getTime() { return new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
+// UI
+function addMsg(t,type){
+  let d=document.createElement("div");
+  d.className="msg "+type;
+  d.innerText=t;
+  chat.appendChild(d);
+}
 
-        // --- SƏS YAZMA ---
-        async function startRecording() {
-            if (document.getElementById('msg-input').value.trim() !== "") return;
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => sendMedia({ audio: reader.result });
-            };
-            mediaRecorder.start();
-            document.getElementById('voice-send-btn').classList.add('recording-active');
-        }
+// RECEIVE
+peer.on("connection",c=>{
+  conn=c;
+  c.on("data",d=>addMsg(d,"recv"));
+});
 
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                document.getElementById('voice-send-btn').classList.remove('recording-active');
-            } else if (document.getElementById('msg-input').value.trim() !== "") {
-                handleTextSend();
-            }
-        }
+// 🎤 VOICE
+let rec;
+let chunks=[];
+async function record(){
+  let stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  rec=new MediaRecorder(stream);
+  rec.start();
+  chunks=[];
+  rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=()=>{
+    let blob=new Blob(chunks);
+    let url=URL.createObjectURL(blob);
+    conn.send({audio:url});
+    addAudio(url,"sent");
+  };
+  setTimeout(()=>rec.stop(),3000);
+}
 
-        function handleTextSend() {
-            const val = document.getElementById('msg-input').value;
-            sendMedia({ text: val });
-            document.getElementById('msg-input').value = "";
-            toggleIcon();
-        }
+// AUDIO UI
+function addAudio(src,type){
+  let d=document.createElement("div");
+  d.className="msg "+type;
+  d.innerHTML=`<audio controls src="${src}"></audio>`;
+  chat.appendChild(d);
+}
 
-        function sendMedia(data) {
-            if(!currentConn) return;
-            currentConn.send(data);
-            contacts[activeChatId].messages.push({...data, type:'sent', time: getTime()});
-            saveAndRender();
-        }
+// 🎥 CALL
+async function startCall(){
+  let id = prompt("Zəng ID:");
+  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  myVideo.srcObject = localStream;
 
-        function handleImage(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = event => sendMedia({ img: event.target.result });
-            reader.readAsDataURL(file);
-        }
+  let call = peer.call(id,localStream);
+  currentCall=call;
 
-        // --- SİLMƏ MEXANİZMİ ---
-        function setupLongPress(element, callback) {
-            let timer;
-            element.onmousedown = element.ontouchstart = () => timer = setTimeout(callback, 800);
-            element.onmouseup = element.ontouchend = element.onmouseleave = () => clearTimeout(timer);
-        }
+  call.on("stream",s=>{
+    remoteVideo.srcObject=s;
+  });
 
-        function selectForDelete(id, type, index = null) {
-            selectedItem = { id, type, index };
-            document.getElementById('delete-bar').style.display = 'flex';
-            if(type === 'message') {
-                const bubbles = document.querySelectorAll('.msg-bubble');
-                bubbles[index].classList.add('selected');
-            }
-        }
+  call.style="block";
+  document.getElementById("call").style.display="block";
+}
 
-        function confirmDelete() {
-            if(selectedItem.type === 'chat') {
-                delete contacts[selectedItem.id];
-            } else if(selectedItem.type === 'message') {
-                contacts[selectedItem.id].messages.splice(selectedItem.index, 1);
-            }
-            saveAndRender();
-            closeDeleteBar();
-        }
+// RECEIVE CALL
+peer.on("call",async call=>{
+  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  call.answer(localStream);
 
-        function closeDeleteBar() {
-            selectedItem = null;
-            document.getElementById('delete-bar').style.display = 'none';
-            document.querySelectorAll('.msg-bubble').forEach(b => b.classList.remove('selected'));
-        }
+  myVideo.srcObject = localStream;
 
-        // --- UI ---
-        function renderChats() {
-            const list = document.getElementById('chat-list');
-            list.innerHTML = "";
-            Object.values(contacts).forEach(c => {
-                const item = document.createElement('div');
-                item.className = 'chat-item';
-                const lastM = c.messages[c.messages.length-1];
-                item.innerHTML = `<div class="avatar"><img src="${c.avatar}"></div><div style="flex:1"><h4>${c.id}</h4><p>${lastM ? (lastM.audio ? '🎤 Səsli mesaj' : lastM.text || '📸 Şəkil') : 'Söhbət boşdur'}</p></div>`;
-                item.onclick = () => openChat(c.id);
-                setupLongPress(item, () => selectForDelete(c.id, 'chat'));
-                list.appendChild(item);
-            });
-        }
+  call.on("stream",s=>{
+    remoteVideo.srcObject=s;
+  });
 
-        function openChat(id) {
-            activeChatId = id;
-            currentConn = peer.connect(id);
-            document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('cw-name').innerText = "ID: " + id;
-            document.getElementById('cw-avatar').innerHTML = `<img src="${contacts[id].avatar}">`;
-            renderMessages();
-        }
+  currentCall=call;
+  document.getElementById("call").style.display="block";
+});
 
-        function renderMessages() {
-            const container = document.getElementById('message-container');
-            container.innerHTML = "";
-            contacts[activeChatId].messages.forEach((m, i) => {
-                const div = document.createElement('div');
-                div.className = `msg-bubble ${m.type}`;
-                
-                if(m.audio) {
-                    div.innerHTML = `<div class="audio-container"><i class="fas fa-play audio-btn" onclick="playAudio('${m.audio}', this)"></i><div style="height:3px; background:#ccc; flex:1; border-radius:2px"></div></div>`;
-                } else if(m.img) {
-                    div.innerHTML = `<img src="${m.img}" style="max-width:100%; border-radius:8px">`;
-                } else {
-                    div.innerText = m.text;
-                }
-                div.innerHTML += `<span style="font-size:10px; color:#888; display:block; text-align:right">${m.time}</span>`;
-                
-                setupLongPress(div, () => selectForDelete(activeChatId, 'message', i));
-                container.appendChild(div);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
+// END
+function endCall(){
+  if(currentCall) currentCall.close();
+  document.getElementById("call").style.display="none";
+}
+</script>
 
-        function playAudio(src, btn) {
-            const audio = new Audio(src);
-            if(btn.classList.contains('fa-play')) {
-                audio.play();
-                btn.className = 'fas fa-pause audio-btn';
-                audio.onended = () => btn.className = 'fas fa-play audio-btn';
-                btn.onclick = () => { audio.pause(); btn.className = 'fas fa-play audio-btn'; };
-            }
-        }
-
-        function toggleIcon() {
-            const icon = document.getElementById('main-icon');
-            icon.className = document.getElementById('msg-input').value.trim() ? "fas fa-paper-plane" : "fas fa-microphone";
-        }
-
-        function saveAndRender() { localStorage.setItem('contacts', JSON.stringify(contacts)); renderChats(); if(activeChatId) renderMessages(); }
-        function closeChat() { document.getElementById('chat-window').style.display = 'none'; activeChatId = null; closeDeleteBar(); }
-        function copyMyId() { navigator.clipboard.writeText(myId); alert("ID kopyalandı!"); }
-    </script>
 </body>
 </html>
