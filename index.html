@@ -3,138 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eco Mesh Empire - Full Access</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Eco Mesh Empire - Voice Pro</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --gold: #ffd700; --blue: #0088cc; --dark: #0f0f0f; --nav-bg: #181818; }
-        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; height: 100vh; }
+        :root {
+            --primary: #0088cc;
+            --gold: #ffd700;
+            --bg: #0a0a0b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+        }
 
-        /* HEADER */
-        .header { height: 60px; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; gap: 10px; }
-        .premium-logo { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold); background: #333; display:flex; align-items:center; justify-content:center; }
-        .search-box { flex: 1; background: #222; border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; }
-        .search-box input { background: none; border: none; color: white; width: 100%; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { 
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: 'Inter', sans-serif; height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden;
+        }
 
-        /* EKRAN BÖLMƏLƏRİ */
-        .page { display: none; height: calc(100vh - 120px); overflow-y: auto; padding: 15px; }
-        .active-page { display: block; }
+        header {
+            height: 70px; display: flex; align-items: center; padding: 0 20px;
+            background: rgba(10, 10, 11, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass); z-index: 100;
+        }
 
-        /* OYUNLAR QRİDİ */
-        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .game-card { background: #222; border-radius: 12px; overflow: hidden; text-align: center; border: 1px solid #333; padding-bottom: 10px; }
+        .premium-avatar {
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid var(--gold); position: relative; cursor: pointer;
+            background: url('https://via.placeholder.com/100') center/cover;
+        }
+
+        /* --- VOICE CONTROL PANEL --- */
+        .voice-status {
+            background: rgba(255, 50, 50, 0.2); border: 1px solid rgba(255, 50, 50, 0.5);
+            padding: 5px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px;
+            font-size: 12px; margin-bottom: 10px;
+        }
+        .mic-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: var(--primary); color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.3s;
+        }
+        .mic-off { background: #ff3b30 !important; }
+
+        /* --- PAGES --- */
+        main { flex: 1; position: relative; overflow: hidden; }
+        .page { position: absolute; inset: 0; display: none; padding-bottom: 80px; overflow-y: auto; }
+        .active-page { display: block; animation: fadeIn 0.4s ease; }
+
+        /* --- GAME ARENA --- */
+        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .game-card {
+            background: var(--card-bg); border-radius: 15px; overflow: hidden;
+            border: 1px solid var(--glass); position: relative;
+        }
         .game-card img { width: 100%; height: 120px; object-fit: cover; }
-        .game-card b { display: block; margin-top: 8px; font-size: 14px; }
+        .game-card-info { padding: 10px; text-align: center; font-size: 13px; font-weight: bold; }
 
-        /* VİDEO FEED (YouTube Stil) */
-        .video-item { width: 100%; height: 250px; background: #000; margin-bottom: 15px; border-radius: 10px; position: relative; }
-        .video-label { position: absolute; bottom: 10px; left: 10px; background: rgba(0,136,204,0.7); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        /* --- NAVIGATION --- */
+        nav {
+            height: 75px; background: rgba(10, 10, 11, 0.95);
+            border-top: 1px solid var(--glass); display: flex;
+            justify-content: space-around; align-items: center;
+            position: fixed; bottom: 0; width: 100%; z-index: 200;
+        }
+        .nav-link { color: #666; text-align: center; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 22px; display: block; margin-bottom: 4px; }
 
-        /* NAVİQASİYA */
-        .bottom-nav { height: 60px; display: flex; justify-content: space-around; align-items: center; background: var(--nav-bg); border-top: 1px solid #333; position: fixed; bottom: 0; width: 100%; }
-        .nav-item { color: #888; text-align: center; font-size: 11px; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--blue); }
-        .nav-item i { font-size: 22px; display: block; margin-bottom: 3px; }
+        /* --- GLOBAL AD --- */
+        #global-ad {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 1000; display: none; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+        }
 
-        /* GLOBAL FLASH */
-        #flash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="premium-logo" onclick="triggerGlobalFlash('Samxal', 'https://via.placeholder.com/150')">
-            <i class="fas fa-crown" style="color:var(--gold)"></i>
+    <header>
+        <div class="premium-avatar" onclick="triggerGlobalAd('ŞAMXAL', 'https://via.placeholder.com/150')"></div>
+        <div style="flex:1; margin:0 15px; background:var(--card-bg); border-radius:12px; padding:8px 15px; border:1px solid var(--glass);">
+            <input type="text" id="yt-search" placeholder="YouTube Axtar..." style="background:none; border:none; color:white; width:100%;">
         </div>
-        <div class="search-box">
-            <input type="text" placeholder="Axtarış...">
-        </div>
-    </div>
+        <i class="fas fa-crown" style="color:var(--gold);"></i>
+    </header>
 
-    <div id="video-page" class="page active-page">
-        <div class="video-item">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
-            <div class="video-label">Trend Video @Admin</div>
-        </div>
-        <div class="video-item">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JZ_D3ELwOQ" frameborder="0" allowfullscreen></iframe>
-            <div class="video-label">Canlı Futbol #Baku</div>
-        </div>
-    </div>
-
-    <div id="game-page" class="page">
-        <h3 style="color:var(--gold)">Populyar Oyunlar</h3>
-        <div class="game-grid">
-            <div class="game-card" onclick="window.open('https://krunker.io', '_blank')">
-                <img src="https://play-lh.googleusercontent.com/7S8f-p-i7pW0B_2X1T7YnO-_0D3-q-m6C1XF_L7o9xK7zF-W9aW-59N_6x8t0v0Nqw">
-                <b>PUBG Style (Krunker)</b>
-            </div>
-            <div class="game-card" onclick="window.open('https://voxiom.io', '_blank')">
-                <img src="https://voxiom.io/img/thumbnail.png">
-                <b>Minecraft Battle</b>
-            </div>
-            <div class="game-card" onclick="window.open('https://poki.com/en/g/subway-surfers', '_blank')">
-                <img src="https://img.poki.com/73fa13988a68886c5567e945c43d2c80.png">
-                <b>Subway Surfers</b>
-            </div>
-            <div class="game-card" onclick="window.open('https://poki.com/en/g/soccer-skills-world-cup', '_blank')">
-                <img src="https://img.poki.com/5f973e4a-f3d9-48e0-94d0-4965157922d3.png">
-                <b>Dünya Kuboku</b>
+    <main>
+        <div id="video-page" class="page active-page">
+            <div id="video-feed" style="height:100%;">
+                <div style="position:relative; height:100%; background:#000;">
+                    <iframe id="main-player" width="100%" height="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?controls=0" frameborder="0"></iframe>
+                    <div style="position:absolute; bottom:100px; left:20px; background:rgba(0,136,204,0.8); padding:10px; border-radius:10px;">
+                        @Admin: "Eco Mesh Empire Canlı!"
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="chat-page" class="page">
-        <h3>Dünya Çatı</h3>
-        <div style="background:#222; padding:15px; border-radius:10px; height:70%; overflow-y:auto;">
-            <p><b style="color:var(--blue)">Admin:</b> Salam hər kəsə! Xoş gəlmisiniz.</p>
-            <p><b>User99:</b> Kim oyun oynamaq istəyir?</p>
+        <div id="game-page" class="page">
+            <div style="padding:20px;">
+                <h2 style="color:var(--gold); margin:0;">Arena Səsli Otaq</h2>
+                <div class="voice-status">
+                    <i class="fas fa-microphone"></i>
+                    <span id="voice-label">Səsli söhbət qapalıdır</span>
+                    <button class="mic-btn mic-off" id="mic-toggle" onclick="toggleMic()">
+                        <i class="fas fa-microphone-slash"></i>
+                    </button>
+                </div>
+                <div style="background:var(--card-bg); padding:10px; border-radius:10px; margin-bottom:20px;">
+                    <small>Otaq ID: <b id="my-id">Yüklənir...</b></small>
+                </div>
+                
+                <div class="game-grid" id="admin-game-list">
+                    </div>
+            </div>
         </div>
-        <input type="text" placeholder="Mesaj yaz..." style="width:100%; margin-top:10px; padding:10px; border-radius:5px; border:none; background:#333; color:white;">
-    </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="changeTab(this, 'video-page')">
-            <i class="fas fa-play"></i>Videolar
+        <div id="chat-page" class="page">
+            <div style="padding:20px; display:flex; flex-direction:column; height:100%;">
+                <h3>Global Chat #Baku</h3>
+                <div id="chat-box" style="flex:1; overflow-y:auto; background:var(--card-bg); padding:15px; border-radius:15px;">
+                    <p><b>Samxal:</b> Hamı Arena-ya gəlsin, səsli otaq açdım! 🎙️</p>
+                </div>
+                <input type="text" placeholder="Mesaj yaz..." style="margin-top:15px; padding:15px; border-radius:10px; background:var(--glass); border:none; color:white;">
+            </div>
         </div>
-        <div class="nav-item" onclick="changeTab(this, 'game-page')">
-            <i class="fas fa-gamepad"></i>Oyunlar
-        </div>
-        <div class="nav-item" onclick="changeTab(this, 'chat-page')">
-            <i class="fas fa-globe"></i>Dünya Çatı
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-user"></i>Profil
-        </div>
-    </div>
+    </main>
 
-    <div id="flash-overlay">
-        <img id="flash-img" src="" style="width:150px; height:150px; border-radius:50%; border:5px solid var(--gold); box-shadow: 0 0 30px var(--gold);">
-        <h1 id="flash-name" style="color:var(--gold); margin-top:20px;"></h1>
-        <p>BÜTÜN DÜNYA SƏNİ İZLƏYİR!</p>
-        <div style="font-size:30px;">✨🏆✨</div>
+    <nav>
+        <div class="nav-link active" onclick="switchTab(this, 'video-page')"><i class="fas fa-play"></i>Axın</div>
+        <div class="nav-link" onclick="switchTab(this, 'game-page')"><i class="fas fa-gamepad"></i>Arena</div>
+        <div class="nav-link" onclick="switchTab(this, 'chat-page')"><i class="fas fa-globe"></i>Dünya</div>
+        <div class="nav-item" onclick="alert('Tezliklə!')"><i class="fas fa-user-astronaut"></i>Profil</div>
+    </nav>
+
+    <div id="global-ad">
+        <i class="fas fa-crown" style="color:var(--gold); font-size:60px;"></i>
+        <img id="ad-user-img" src="" style="width:150px; height:150px; border-radius:50%; border:5px solid var(--gold); margin:20px 0;">
+        <h1 id="ad-user-name" style="color:var(--gold);"></h1>
+        <p>GÜNÜN KRALI ELAN EDİLDİ!</p>
     </div>
 
     <script>
-        function changeTab(element, pageId) {
-            // Bütün səhifələri gizlət
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active-page'));
-            // Seçilən səhifəni göstər
-            document.getElementById(pageId).classList.add('active-page');
-            
-            // Aktiv tab rəngini dəyiş
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
+        // --- 1. ADMIN PANELİ (Oyunları asanlıqla buradan dəyiş) ---
+        const games = [
+            { name: "PUBG Style", url: "https://krunker.io", img: "https://via.placeholder.com/300x150/222/ffd700?text=PUBG" },
+            { name: "Minecraft War", url: "https://voxiom.io", img: "https://via.placeholder.com/300x150/222/0088cc?text=Minecraft" },
+            { name: "Subway Surfers", url: "https://poki.com/en/g/subway-surfers", img: "https://img.poki.com/73fa13988a68886c5567e945c43d2c80.png" },
+            { name: "Soccer Cup", url: "https://poki.com/en/g/soccer-skills-world-cup", img: "https://img.poki.com/5f973e4a-f3d9-48e0-94d0-4965157922d3.png" }
+        ];
+
+        function loadGames() {
+            const list = document.getElementById('admin-game-list');
+            games.forEach(game => {
+                list.innerHTML += `
+                    <div class="game-card" onclick="window.open('${game.url}', '_blank')">
+                        <img src="${game.img}">
+                        <div class="game-card-info">${game.name}</div>
+                    </div>
+                `;
+            });
+        }
+        loadGames();
+
+        // --- 2. SƏSLİ SÖHBƏT (VOICE ENGINE) ---
+        const peer = new Peer();
+        let myStream;
+        let isMicOn = false;
+
+        peer.on('open', id => { document.getElementById('my-id').innerText = id; });
+
+        async function toggleMic() {
+            const btn = document.getElementById('mic-toggle');
+            const label = document.getElementById('voice-label');
+
+            if (!isMicOn) {
+                try {
+                    myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isMicOn = true;
+                    btn.classList.remove('mic-off');
+                    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    label.innerText = "Səsli söhbət AKTİVDİR";
+                    label.style.color = "lightgreen";
+                } catch (err) {
+                    alert("Mikrofona icazə verilmədi!");
+                }
+            } else {
+                myStream.getTracks().forEach(track => track.stop());
+                isMicOn = false;
+                btn.classList.add('mic-off');
+                btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                label.innerText = "Səsli söhbət qapalıdır";
+                label.style.color = "white";
+            }
         }
 
-        function triggerGlobalFlash(name, img) {
-            const overlay = document.getElementById('flash-overlay');
-            document.getElementById('flash-img').src = img;
-            document.getElementById('flash-name').innerText = name + " TƏQDİM EDİR!";
-            overlay.style.display = 'flex';
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 5000); // 5 saniyə sonra itir
+        // --- 3. DİGƏR FUNKSİYALAR ---
+        function switchTab(el, pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active-page');
+            el.classList.add('active');
+        }
+
+        function triggerGlobalAd(name, img) {
+            const ad = document.getElementById('global-ad');
+            document.getElementById('ad-user-img').src = img;
+            document.getElementById('ad-user-name').innerText = name + " TƏQDİM EDİR!";
+            ad.style.display = 'flex';
+            setTimeout(() => { ad.style.display = 'none'; }, 6000);
         }
     </script>
 </body>
