@@ -2,502 +2,135 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco Mesh - Tam P2P Messenger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco Mesh Empire</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --wa-teal: #008069;
-            --wa-light-teal: #25D366;
-            --wa-bg: #ffffff;
-            --wa-header: #008069;
-            --wa-chat-bg: #efeae2;
+        :root { --gold: #ffd700; --blue: #0088cc; --dark: #0f0f0f; }
+        body { margin: 0; background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+
+        /* --- GLOBAL ANIMASIYA (PREMIUM) --- */
+        .global-flash-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            animation: fadeIn 0.5s forwards;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background-color: var(--wa-bg); overflow: hidden; height: 100vh; }
+        .flash-content { text-align: center; animation: zoomIn 1s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+        .flash-img { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--gold); box-shadow: 0 0 50px var(--gold); }
+        .gold-rain { position: absolute; width: 100%; height: 100%; pointer-events: none; }
         
-        /* HEADER */
-        .header { background: var(--wa-header); color: white; padding: 15px 15px 5px; position: sticky; top: 0; z-index: 1000; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .header-top h2 { margin: 0; font-size: 20px; font-weight: 500; }
-        .header-icons { display: flex; gap: 20px; font-size: 18px; position: relative; }
-        
-        /* TABS */
-        .tabs { display: flex; text-transform: uppercase; font-size: 14px; font-weight: 600; }
-        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: rgba(255,255,255,0.7); border-bottom: 3px solid transparent; }
-        .tab.active { color: white; border-bottom: 3px solid white; }
+        /* --- HEADER & PREMIUM LOGO --- */
+        .header { height: 60px; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; justify-content: space-between; }
+        .premium-logo { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); cursor: pointer; transition: 0.3s; }
+        .premium-logo:hover { transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
 
-        /* CONTENT SECTIONS */
-        .content { height: calc(100vh - 105px); overflow-y: auto; }
-        .section { display: none; }
-        .section.active { display: block; }
+        /* --- VİDEO & YAZI SİSTEMİ --- */
+        #main-feed { height: calc(100vh - 120px); overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .video-container { width: 100%; height: 100%; scroll-snap-align: start; position: relative; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .video-user-label { 
+            position: absolute; bottom: 100px; left: 20px; background: rgba(0, 136, 204, 0.8);
+            padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 18px;
+            animation: slideLeft 0.5s ease; border-left: 5px solid var(--gold);
+        }
 
-        /* LIST ITEMS (CHATS, CALLS, STATUS) */
-        .item { display: flex; padding: 12px 15px; align-items: center; border-bottom: 1px solid #f2f2f2; cursor: pointer; }
-        .item:active { background: #f5f5f5; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #dfe5e7; display: flex; align-items: center; justify-content: center; margin-right: 15px; overflow: hidden; font-size: 24px; color: white; }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .info { flex: 1; }
-        .info h4 { margin: 0; font-size: 16px; color: #000; }
-        .info p { margin: 3px 0 0; font-size: 14px; color: #666; }
-        .time { font-size: 12px; color: #666; }
+        /* --- OYUN PORTALI (100+ OYUN) --- */
+        #game-grid { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; height: 100%; }
+        .game-item { background: #222; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; }
+        .game-item img { width: 100%; border-radius: 8px; }
 
-        /* DROP DOWN MENU */
-        #menu-dropdown { position: absolute; right: 10px; top: 45px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-radius: 8px; display: none; flex-direction: column; width: 180px; z-index: 2000; overflow: hidden; }
-        .menu-item { padding: 12px 15px; color: #333; font-size: 15px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .menu-item:hover { background: #f5f5f5; }
+        /* --- NAVİQASYON --- */
+        .nav { height: 60px; display: flex; justify-content: space-around; align-items: center; background: #111; }
+        .nav i { font-size: 24px; color: #888; cursor: pointer; }
+        .nav i.active { color: var(--blue); }
 
-        /* CHAT WINDOW */
-        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-chat-bg); display: none; flex-direction: column; z-index: 3000; }
-        .cw-header { background: var(--wa-header); color: white; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .cw-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 15px; position: relative; }
-        .msg.sent { align-self: flex-end; background: #e7ffdb; }
-        .msg.received { align-self: flex-start; background: white; }
-        .msg-time { font-size: 10px; color: #888; text-align: right; display: block; margin-top: 4px; }
-
-        /* INPUT AREA */
-        .input-area { padding: 8px; display: flex; gap: 8px; align-items: center; background: #f0f0f0; }
-        .input-bar { flex: 1; background: white; border-radius: 25px; padding: 10px 15px; display: flex; align-items: center; }
-        .input-bar input { border: none; flex: 1; outline: none; font-size: 16px; }
-        .btn-round { width: 45px; height: 45px; background: var(--wa-header); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
-
-        /* FAB */
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--wa-light-teal); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); z-index: 100; }
-
-        /* MODAL */
-        .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 4000; align-items: center; justify-content: center; }
-        .modal { background: white; width: 85%; max-width: 300px; padding: 20px; border-radius: 12px; text-align: center; }
-        .modal input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ddd; border-radius: 5px; text-align: center; font-size: 18px; }
-        .modal-btns { display: flex; gap: 10px; }
-        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.5); } to { transform: scale(1.2); } }
+        @keyframes slideLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
+    <div id="flash-box"></div>
+
     <div class="header">
-        <div class="header-top">
-            <h2>Eco Mesh</h2>
-            <div class="header-icons">
-                <i class="fas fa-camera"></i>
-                <i class="fas fa-search"></i>
-                <i class="fas fa-ellipsis-v" onclick="toggleMenu()"></i>
-                <div id="menu-dropdown">
-                    <div class="menu-item" onclick="showId()">ID-mi Göster</div>
-                    <div class="menu-item" onclick="alert('Eco Mesh v1.0 - P2P Şifrələmə aktivdir.')">Ayarlar</div>
-                    <div class="menu-item" onclick="alert('Məxfilik: Sizin məlumatlarınız heç bir serverdə saxlanılmır.')">Məxfilik Siyasəti</div>
-                </div>
-            </div>
+        <img src="https://via.placeholder.com/100" class="premium-logo" onclick="testFlash()" title="Reklam Ver">
+        <div style="background:#222; border-radius:20px; padding:5px 15px; flex:1; margin:0 15px;">
+            <input type="text" id="yt-search" placeholder="Axtar və Trend et..." style="background:none; border:none; color:white; width:100%; outline:none;">
         </div>
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('chats', this)">Söhbətlər</div>
-            <div class="tab" onclick="switchTab('status', this)">Status</div>
-            <div class="tab" onclick="switchTab('calls', this)">Zənglər</div>
+        <i class="fas fa-crown" style="color:var(--gold); font-size:20px;"></i>
+    </div>
+
+    <div id="main-feed">
         </div>
-    </div>
 
-    <div class="content">
-        <div id="section-chats" class="section active"></div>
-        <div id="section-status" class="section">
-            <div class="item" onclick="addStatus()">
-                <div class="avatar" style="background: #25D366;"><i class="fas fa-plus"></i></div>
-                <div class="info"><h4>Mənim statusum</h4><p>Status yeniləməsi əlavə et</p></div>
-            </div>
-            <p style="padding: 10px 15px; color: #666; font-size: 13px; font-weight: 600;">SON YENİLƏMƏLƏR</p>
-            <div id="status-list"></div>
+    <div id="game-grid">
+        <div class="game-item" onclick="playGame('https://krunker.io')"><img src="https://static.gamedistribution.com/games/images/5db139b999d343f885e921d7b1d1e4e4-512x512.jpeg">PUBG Style</div>
+        <div class="game-item" onclick="playGame('https://voxiom.io')"><img src="https://voxiom.io/img/thumbnail.png">Minecraft War</div>
+        <div class="game-item" onclick="playGame('https://poki.com/en/g/subway-surfers')"><img src="https://img.poki.com/73fa13988a68886c5567e945c43d2c80.png">Subway Surfers</div>
         </div>
-        <div id="section-calls" class="section"></div>
+
+    <div class="nav">
+        <i class="fas fa-play active" onclick="showTab('video')"></i>
+        <i class="fas fa-gamepad" onclick="showTab('games')"></i>
+        <i class="fas fa-globe" onclick="showTab('world')"></i>
+        <i class="fas fa-comment-alt" onclick="showTab('chat')"></i>
     </div>
-
-    <div class="fab" onclick="showAddContact()"><i class="fas fa-comment-alt"></i></div>
-
-    <div id="chat-window">
-        <div class="cw-header">
-            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-            <div class="avatar" id="cw-avatar" style="width:35px; height:35px; margin-right:5px;"></div>
-            <div class="info"><h4 id="cw-name" style="color:white">Dost</h4><p style="color:white; font-size:12px">onlayn</p></div>
-            <i class="fas fa-video" onclick="makeCall('video')"></i>
-            <i class="fas fa-phone" onclick="makeCall('audio')" style="margin-left:15px"></i>
-        </div>
-        <div class="cw-messages" id="cw-messages"></div>
-        <div class="input-area">
-            <div class="input-bar"><input type="text" id="msg-input" placeholder="Mesaj yazın..."></div>
-            <div class="btn-round" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></div>
-        </div>
-    </div>
-
-    <div class="modal-bg" id="modal">
-        <div class="modal" id="modal-content"></div>
-    </div>
-
-    <script>
-        const peer = new Peer();
-        let myId = "";
-        let contacts = JSON.parse(localStorage.getItem('wa_contacts')) || {};
-        let activeId = null;
-        let conn = null;
-
-        peer.on('open', id => {
-            myId = id.toString().slice(0, 6).toUpperCase();
-            console.log("Mənim ID:", myId);
-        });
-
-        peer.on('connection', c => {
-            conn = c;
-            const fid = c.peer.toString().slice(0, 6).toUpperCase();
-            if(!contacts[fid]) contacts[fid] = {id: fid, msgs: [], status: ""};
-            setupConn();
-        });
-
-        function setupConn() {
-            conn.on('data', data => {
-                const fid = conn.peer.toString().slice(0, 6).toUpperCase();
-                contacts[fid].msgs.push({type: 'received', txt: data, time: getTime()});
-                save();
-                if(activeId === fid) renderMsgs();
-                renderChats();
-            });
-        }
-
-        function switchTab(s, el) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('section-' + s).classList.add('active');
-            if(s === 'chats') renderChats();
-            if(s === 'calls') renderCalls();
-        }
-
-        function renderChats() {
-            const container = document.getElementById('section-chats');
-            container.innerHTML = "";
-            Object.values(contacts).forEach(c => {
-                const last = c.msgs[c.msgs.length-1] || {txt: "Söhbətə başla...", time: ""};
-                container.innerHTML += `
-                    <div class="item" onclick="openChat('${c.id}')">
-                        <div class="avatar"><i class="fas fa-user"></i></div>
-                        <div class="info"><h4>ID: ${c.id}</h4><p>${last.txt}</p></div>
-                        <div class="time">${last.time}</div>
-                    </div>`;
-            });
-        }
-
-        function openChat(id) {
-            activeId = id;
-            document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('cw-name').innerText = "ID: " + id;
-            document.getElementById('cw-avatar').innerHTML = '<i class="fas fa-user"></i>';
-            if(!conn || conn.peer !== id) {
-                conn = peer.connect(id);
-                setupConn();
-            }
-            renderMsgs();
-        }
-
-        function sendMsg() {
-            const inp = document.getElementById('msg-input');
-            if(!inp.value || !conn) return;
-            conn.send(inp.value);
-            contacts[activeId].msgs.push({type: 'sent', txt: inp.value, time: getTime()});
-            save();
-            renderMsgs();
-            inp.value = "";
-        }
-
-        function renderMsgs() {
-            const container = document.getElementById('cw-messages');
-            container.innerHTML = "";
-            contacts[activeId].msgs.forEach(m => {
-                container.innerHTML += `<div class="msg ${m.type}">${m.txt}<span class="msg-time">${m.time}</span></div>`;
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function showAddContact() {
-            const m = document.getElementById('modal');
-            const c = document.getElementById('modal-content');
-            m.style.display = 'flex';
-            c.innerHTML = `<h3>Yeni Söhbət</h3><input id="new-id" placeholder="6 rəqəmli ID"><div class="modal-btns">
-                <button onclick="closeModal()">Ləğv et</button>
-                <button style="background:var(--wa-header); color:white" onclick="addId()">Başla</button></div>`;
-        }
-
-        function addId() {
-            const id = document.getElementById('new-id').value.toUpperCase();
-            if(id.length < 5) return;
-            contacts[id] = {id: id, msgs: [], status: ""};
-            save();
-            closeModal();
-            openChat(id);
-        }
-
-        function showId() {
-            toggleMenu();
-            alert("Sənin Eco Mesh ID-in: " + myId + "\nDostunla bu kodu paylaş.");
-        }
-
-        function toggleMenu() {
-            const m = document.getElementById('menu-dropdown');
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function makeCall(type) {
-            alert(type === 'video' ? "Görüntülü zəng başladılır..." : "Səsli zəng başladılır...");
-        }
-
-        function addStatus() {
-            const txt = prompt("Statusunuzu yazın:");
-            if(txt) alert("Status yeniləndi: " + txt);
-        }
-
-        function getTime() { return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
-        function save() { localStorage.setItem('wa_contacts', JSON.stringify(contacts)); }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function closeChat() { document.getElementById('chat-window').style.display = 'none'; renderChats(); }
-
-        renderChats();
-    </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="az">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eco Mesh Ultra - Stable P2P</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --main-blue: #0088cc; --bg: #f0f2f5; --sent: #e3f2fd; }
-        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-
-        /* Ana Səhifə Oyun Grid */
-        .game-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-bottom: 100px; }
-        .game-card { background: white; border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
-        .game-card:active { transform: scale(0.95); }
-        .game-card i { font-size: 35px; color: var(--main-blue); margin-bottom: 10px; }
-        
-        /* Oyun Frame Overlay */
-        #game-frame-overlay { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; }
-        .game-header { background: #333; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        iframe { flex: 1; border: none; width: 100%; height: 100%; }
-
-        /* Giriş Bölməsi */
-        .login-section { grid-column: span 2; background: #fff; padding: 25px; border-radius: 20px; text-align: center; border: 2px solid var(--main-blue); margin-bottom: 20px; }
-        .id-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 18px; margin: 10px 0; outline: none; }
-
-        /* Çat və Zəng Ekranları */
-        #chat-window { position: fixed; inset: 0; background: #e5ddd5; display: none; flex-direction: column; z-index: 1000; }
-        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg-wrapper { max-width: 85%; position: relative; margin-bottom: 5px; }
-        .sent { align-self: flex-end; } .received { align-self: flex-start; }
-        .msg { padding: 10px; border-radius: 12px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .sent .msg { background: var(--sent); }
-        .delete-area { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-top: 2px; }
-
-        /* Video 50/50 */
-        #call-screen { position: fixed; inset: 0; background: black; display: none; flex-direction: column; z-index: 6000; }
-        .video-box { flex: 1; height: 50vh; overflow: hidden; position: relative; background: #222; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Səs Düyməsi Aktivliyi */
-        .voice-active { transform: scale(1.5); background: #ff3b30 !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    </style>
-</head>
-<body onclick="enableAudio()"> <div class="game-container">
-    <div class="game-card" onclick="openGame('https://play2048.co/')"><i class="fas fa-grid-2"></i><br>2048</div>
-    <div class="game-card" onclick="openGame('https://tetris.com/play-tetris')"><i class="fas fa-cubes"></i><br>Tetris</div>
-    <div class="game-card" onclick="openGame('https://www.google.com/logos/2010/pacman10-i.html')"><i class="fas fa-ghost"></i><br>Pac-Man</div>
-    <div class="game-card" onclick="openGame('https://poki.com/en/g/snake-is-mlg-edition')"><i class="fas fa-worm"></i><br>Snake</div>
-    <div class="game-card" onclick="openGame('https://poki.com/en/g/subway-surfers')"><i class="fas fa-subway"></i><br>Surfers</div>
-    <div class="game-card" onclick="openGame('https://www.chess.com/play/online')"><i class="fas fa-chess"></i><br>Chess</div>
-
-    <div class="login-section">
-        <b id="my-id-label">ID-niz: Yüklənir...</b><br>
-        <i class="fas fa-ellipsis-v" onclick="toggleLogin()" style="padding: 10px; cursor:pointer;"></i>
-        <div id="login-form" style="display:none;">
-            <input type="number" id="target-id" class="id-input" placeholder="Dostunun ID-si">
-            <button onclick="connectToFriend()" style="background:var(--main-blue); color:white; border:none; padding:12px 30px; border-radius:10px; width:100%;">OK - Söhbətə başla</button>
-        </div>
-    </div>
-</div>
-
-<div id="game-frame-overlay">
-    <div class="game-header"><span>Oyun Rejimi</span> <i class="fas fa-times" onclick="closeGame()" style="font-size:24px;"></i></div>
-    <iframe id="game-iframe" src=""></iframe>
-</div>
-
-<div id="chat-window">
-    <div style="background:var(--main-blue); color:white; padding:15px; display:flex; align-items:center; gap:15px;">
-        <i class="fas fa-arrow-left" onclick="closeChat()"></i>
-        <b id="chat-title">Dost</b>
-        <i class="fas fa-video" style="margin-left:auto" onclick="makeCall()"></i>
-    </div>
-    <div class="messages" id="msg-box"></div>
-    <div style="padding:10px; background:#eee; display:flex; gap:10px; align-items:center;">
-        <button onclick="document.getElementById('file-in').click()" style="border:none; background:none; font-size:20px; color:var(--main-blue);"><i class="fas fa-camera"></i></button>
-        <input type="text" id="msg-input" placeholder="Mesaj..." style="flex:1; padding:10px; border-radius:20px; border:none; outline:none;">
-        <button id="voice-rec-btn" style="width:40px; height:40px; border-radius:50%; border:none; background:var(--main-blue); color:white;"><i class="fas fa-microphone"></i></button>
-    </div>
-</div>
-
-<div id="call-screen">
-    <div class="video-box"><video id="v-remote" autoplay playsinline></video></div>
-    <div class="video-box"><video id="v-local" autoplay muted playsinline></video></div>
-    <div style="position:absolute; bottom:30px; width:100%; display:flex; justify-content:center;">
-        <button onclick="endCall()" style="background:red; width:60px; height:60px; border-radius:50%; border:none; color:white;"><i class="fas fa-phone-slash"></i></button>
-    </div>
-</div>
-
-<input type="file" id="file-in" style="display:none" accept="image/*,video/*" capture="environment" onchange="sendFile(this.files[0])">
-<audio id="snd-msg" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
-<audio id="snd-ring" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
 
 <script>
-    let myId = localStorage.getItem('eco_p2p_id') || Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem('eco_p2p_id', myId);
-    document.getElementById('my-id-label').innerText = "ID: " + myId;
+    const API_KEY = 'YOUR_YOUTUBE_API_KEY'; // Bura öz API Key-ini qoy
 
-    const peer = new Peer(myId, { debug: 2 });
-    let conn, activeCall, localStream, recorder;
-
-    function enableAudio() { 
-        document.getElementById('snd-msg').load(); 
-        document.getElementById('snd-ring').load(); 
+    // 1. Qlobal Reklam Animasiyası (Test etmək üçün loqoya bas)
+    function testFlash() {
+        const flashBox = document.getElementById('flash-box');
+        flashBox.innerHTML = `
+            <div class="global-flash-overlay">
+                <div class="flash-content">
+                    <img src="https://via.placeholder.com/150" class="flash-img">
+                    <h1 style="color:var(--gold); margin-top:20px;">SAMXAL TƏQDİM EDİR!</h1>
+                    <p>Bu günün kralı seçildi!</p>
+                    <div style="font-size:40px;">🎊✨🏆✨🎊</div>
+                </div>
+            </div>
+        `;
+        // Qızılı yağış səsi və ya effekti bura əlavə oluna bilər
+        setTimeout(() => flashBox.innerHTML = '', 6000);
     }
 
-    function openGame(url) { 
-        document.getElementById('game-iframe').src = url; 
-        document.getElementById('game-frame-overlay').style.display = 'flex'; 
-    }
-    function closeGame() { document.getElementById('game-frame-overlay').style.display = 'none'; document.getElementById('game-iframe').src = ''; }
-    function toggleLogin() { document.getElementById('login-form').style.display = 'block'; }
-
-    // Peer Hadisələri
-    peer.on('connection', c => { conn = c; handleConn(); document.getElementById('chat-window').style.display = 'flex'; });
-    peer.on('call', call => {
-        document.getElementById('snd-ring').play();
-        if(confirm("Görüntülü zəng gəlir. Cavab verilsin?")) {
-            activeCall = call;
-            answerCall();
-        } else {
-            call.close();
-            document.getElementById('snd-ring').pause();
-        }
-    });
-
-    function connectToFriend() {
-        let tid = document.getElementById('target-id').value;
-        if(!tid) return;
-        conn = peer.connect(tid);
-        handleConn();
-        document.getElementById('chat-window').style.display = 'flex';
-    }
-
-    function handleConn() {
-        conn.on('data', data => {
-            if(data.type === 'del') { document.getElementById(data.id)?.remove(); return; }
-            document.getElementById('snd-msg').play();
-            renderMsg(data, 'received');
+    // 2. Video Üzərinə Yazı Qoymaq (Trend funksiyası)
+    function renderVideos(items) {
+        const feed = document.getElementById('main-feed');
+        feed.innerHTML = '';
+        items.forEach(item => {
+            const vId = item.id.videoId;
+            const container = document.createElement('div');
+            container.className = 'video-container';
+            container.innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${vId}?autoplay=0&controls=0&modestbranding=1"></iframe>
+                <div class="video-user-label">@Samxal: "Bu mahnı hər kəsə gəlsin!" 🔥</div>
+                <div style="position:absolute; right:15px; bottom:150px; display:flex; flex-direction:column; gap:20px;">
+                    <i class="fas fa-heart" style="font-size:30px;"></i>
+                    <i class="fas fa-paper-plane" style="font-size:30px; color:var(--blue);"></i>
+                </div>
+            `;
+            feed.appendChild(container);
         });
     }
 
-    function renderMsg(data, side) {
-        const mid = "m-" + Date.now();
-        const div = document.createElement('div');
-        div.className = `msg-wrapper ${side}`;
-        div.id = mid;
-        
-        let html = '';
-        if(data.type === 'text') html = data.val;
-        else if(data.type === 'img') html = `<img src="${data.val}" style="width:100%; border-radius:10px;">`;
-        else if(data.type === 'vid') html = `<video src="${data.val}" controls style="width:100%; border-radius:10px;"></video>`;
-        else if(data.type === 'aud') html = `<div style="display:flex; align-items:center; gap:10px;"><button onclick="playAud(this, '${data.val}')" style="border:none; background:var(--main-blue); color:white; border-radius:50%; width:30px; height:30px;"><i class="fas fa-play"></i></button> Səsli Mesaj</div>`;
-
-        div.innerHTML = `<div class="msg">${html}</div><div class="delete-area" onclick="deleteMsg('${mid}')"><i class="fas fa-trash"></i> Sil</div>`;
-        document.getElementById('msg-box').appendChild(div);
-        document.getElementById('msg-box').scrollTop = document.getElementById('msg-box').scrollHeight;
+    // 3. Tab Keçidləri
+    function showTab(tab) {
+        document.getElementById('main-feed').style.display = tab === 'video' ? 'block' : 'none';
+        document.getElementById('game-grid').style.display = tab === 'games' ? 'grid' : 'none';
+        // Digər tablar üçün...
     }
 
-    function deleteMsg(id) {
-        document.getElementById(id).remove();
-        if(conn) conn.send({type: 'del', id: id});
+    function playGame(url) {
+        window.open(url, '_blank'); // Brauzer oyunları üçün ən stabil yol
     }
 
-    function playAud(btn, src) {
-        const a = new Audio(src);
-        a.play(); btn.innerHTML = '<i class="fas fa-pause"></i>';
-        a.onended = () => btn.innerHTML = '<i class="fas fa-play"></i>';
-    }
-
-    // Səs Yazma (Basıb Saxla)
-    const vBtn = document.getElementById('voice-rec-btn');
-    vBtn.onmousedown = vBtn.ontouchstart = async (e) => {
-        e.preventDefault();
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        recorder = new MediaRecorder(stream);
-        let chunks = [];
-        recorder.ondataavailable = ev => chunks.push(ev.data);
-        recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'audio/ogg' });
-            const reader = new FileReader();
-            reader.onload = () => {
-                const d = { type: 'aud', val: reader.result };
-                conn.send(d); renderMsg(d, 'sent');
-            };
-            reader.readAsDataURL(blob);
-        };
-        recorder.start();
-        vBtn.classList.add('voice-active');
-    };
-    window.onmouseup = window.ontouchend = () => {
-        if(recorder && recorder.state === 'recording') { recorder.stop(); vBtn.classList.remove('voice-active'); }
-    };
-
-    function sendFile(file) {
-        const r = new FileReader();
-        r.onload = e => {
-            const d = { type: file.type.includes('image') ? 'img' : 'vid', val: e.target.result };
-            conn.send(d); renderMsg(d, 'sent');
-        };
-        r.readAsDataURL(file);
-    }
-
-    async function makeCall() {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('v-local').srcObject = localStream;
-        document.getElementById('call-screen').style.display = 'flex';
-        activeCall = peer.call(conn.peer, localStream);
-        activeCall.on('stream', s => document.getElementById('v-remote').srcObject = s);
-    }
-
-    async function answerCall() {
-        document.getElementById('snd-ring').pause();
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('v-local').srcObject = localStream;
-        document.getElementById('call-screen').style.display = 'flex';
-        activeCall.answer(localStream);
-        activeCall.on('stream', s => document.getElementById('v-remote').srcObject = s);
-    }
-
-    function endCall() {
-        if(activeCall) activeCall.close();
-        if(localStream) localStream.getTracks().forEach(t => t.stop());
-        document.getElementById('call-screen').style.display = 'none';
-        document.getElementById('snd-ring').pause();
-    }
-
-    function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
-    document.getElementById('msg-input').onkeypress = e => {
-        if(e.key === 'Enter' && e.target.value) {
-            const d = { type: 'text', val: e.target.value };
-            conn.send(d); renderMsg(d, 'sent'); e.target.value = '';
-        }
-    }
+    // İlk yükləmə simulyasiyası
+    // loadTrendingVideos(); // Bu funksiyanı əvvəlki koddan bura bağla
 </script>
 </body>
 </html>
