@@ -2,153 +2,269 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eco Mesh Empire - Short & Voice</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OkoTok - Video Bazar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #0088cc; --gold: #ffd700; --bg: #0a0a0b; --glass: rgba(255,255,255,0.1); }
-        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; height: 100vh; }
-
-        /* HEADER */
-        header { height: 60px; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid var(--glass); justify-content: space-between; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         
-        /* SHORTS FEED */
-        #shorts-container { height: calc(100vh - 130px); overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .short-video { width: 100%; height: 100%; scroll-snap-align: start; position: relative; background: #000; }
-        .short-video iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
-        .short-overlay { position: absolute; bottom: 80px; left: 15px; z-index: 10; text-shadow: 2px 2px 5px black; }
+        /* Grid Görünüşü (3-lü cərgə) */
+        #gridView, #favView, #searchResultView { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; 
+            height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; 
+        }
+        .grid-item { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; border-radius: 4px; overflow: hidden; }
+        .grid-item video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .grid-price { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #fbbf24; }
 
-        /* ARENA & VOICE */
-        .page { display: none; height: calc(100vh - 130px); overflow-y: auto; padding: 15px; }
-        .active-page { display: block; }
-        .voice-card { background: var(--glass); padding: 15px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; }
+        /* TikTok Feed (Tam Ekran) */
+        #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        #feedView::-webkit-scrollbar { display: none; }
+        .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
+        .snap-section video { width: 100%; height: 100%; object-fit: contain; }
         
-        /* GAME GRID */
-        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .game-item { background: #222; border-radius: 10px; overflow: hidden; text-align: center; cursor: pointer; border: 1px solid #333; }
-        .game-item img { width: 100%; height: 100px; object-fit: cover; }
+        /* İnterfeys Elementləri */
+        .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%); pointer-events: none; }
+        .side-bar { position: absolute; right: 12px; bottom: 140px; display: flex; flex-direction: column; gap: 18px; z-index: 50; }
+        .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .action-btn span { font-size: 10px; margin-top: 2px; }
 
-        /* OYUN MODAL (Oyun daxildə açılsın deyə) */
-        #game-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; }
-        #close-game { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 10px; border-radius: 5px; z-index: 2100; }
+        /* Naviqasiya Paneli */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 10px; cursor: pointer; }
+        .nav-item.active { color: white; }
 
-        /* NAVBAR */
-        nav { height: 70px; display: flex; justify-content: space-around; align-items: center; background: #111; border-top: 1px solid #333; position: fixed; bottom: 0; width: 100%; }
-        .nav-link { color: #666; text-align: center; cursor: pointer; }
-        .nav-link.active { color: var(--primary); }
+        /* Axtarış Paneli */
+        .search-container { position: fixed; top: 70px; left: 0; width: 100%; padding: 10px 15px; z-index: 110; display: none; background: black; }
+        .search-input { width: 100%; background: #222; border: 1px solid #333; border-radius: 10px; padding: 10px 15px; color: white; outline: none; }
+
+        /* Modallar */
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 200; padding: 30px; overflow-y: auto; }
+        .watermark { position: absolute; top: 75px; left: 20px; opacity: 0.3; font-weight: 900; pointer-events: none; z-index: 60; color: white; font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div style="border: 2px solid var(--gold); border-radius: 50%; padding: 5px;" onclick="triggerFlash()">
-            <i class="fas fa-crown" style="color:var(--gold)"></i>
+    <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[120] bg-gradient-to-b from-black to-transparent">
+        <h1 class="text-2xl font-black italic tracking-tighter" onclick="showMainGrid()">OKOTOK</h1>
+        <div class="flex gap-4 items-center">
+            <button onclick="toggleSearch()" class="text-xl"><i class="fas fa-search"></i></button>
+            <button onclick="showMainGrid()" class="text-xl"><i class="fas fa-th-large"></i></button>
+            <button onclick="openModal('menuModal')" class="text-xl"><i class="fas fa-ellipsis-v"></i></button>
         </div>
-        <div style="background:#222; border-radius:15px; padding:5px 15px; flex:1; margin:0 10px;">
-            <input type="text" placeholder="YouTube Shorts Axtar..." style="background:none; border:none; color:white; width:100%;">
-        </div>
-    </header>
-
-    <main>
-        <div id="video-page" class="page active-page" style="padding:0;">
-            <div id="shorts-container">
-                </div>
-        </div>
-
-        <div id="game-page" class="page">
-            <div class="voice-card">
-                <h3 style="margin-top:0; color:var(--gold)">🎙️ Səsli Otaq</h3>
-                <p>Sənin ID: <b id="my-id" style="color:var(--primary); font-size: 20px;">-----</b></p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="friend-id" placeholder="Dostunun ID-si" style="flex:1; padding:8px; border-radius:5px; border:1px solid #444; background:#111; color:white;">
-                    <button onclick="callFriend()" style="background:var(--primary); border:none; color:white; padding:10px; border-radius:5px;">Qoşul</button>
-                </div>
-                <button id="mic-btn" onclick="toggleMic()" style="width:100%; margin-top:10px; padding:10px; border-radius:5px; border:none; background:#ff3b30; color:white;">
-                    <i class="fas fa-microphone-slash"></i> Mikrofonu Aç
-                </button>
-            </div>
-
-            <div class="game-grid">
-                <div class="game-item" onclick="playGame('https://krunker.io')"><img src="https://via.placeholder.com/150/111/ffd700?text=PUBG"><b>PUBG Pro</b></div>
-                <div class="game-item" onclick="playGame('https://voxiom.io')"><img src="https://via.placeholder.com/150/111/0088cc?text=Minecraft"><b>MC War</b></div>
-                <div class="game-item" onclick="playGame('https://poki.com/en/g/subway-surfers')"><img src="https://img.poki.com/73fa13988a68886c5567e945c43d2c80.png"><b>Subway</b></div>
-                <div class="game-item" onclick="playGame('https://poki.com/en/g/soccer-skills-world-cup')"><img src="https://img.poki.com/5f973e4a-f3d9-48e0-94d0-4965157922d3.png"><b>Futbol</b></div>
-            </div>
-        </div>
-    </main>
-
-    <div id="game-modal">
-        <button id="close-game" onclick="closeGame()">X Bağla</button>
-        <iframe id="game-frame" src="" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 
-    <nav>
-        <div class="nav-link active" onclick="showPage('video-page', this)"><i class="fas fa-play"></i><br>Shorts</div>
-        <div class="nav-link" onclick="showPage('game-page', this)"><i class="fas fa-gamepad"></i><br>Arena</div>
-        <div class="nav-link" onclick="alert('Tezliklə!')"><i class="fas fa-globe"></i><br>Dünya</div>
-    </nav>
+    <div id="searchBox" class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Marka, model və ya mövzu axtar..." oninput="handleSearch(this.value)">
+    </div>
+
+    <div id="gridView"></div>
+    <div id="favView" style="display:none;"></div>
+    <div id="feedView" onscroll="handleScroll()"></div>
+
+    <div id="menuModal" class="modal">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-yellow-500">OkoTok Məlumat</h2>
+            <button onclick="closeModal('menuModal')" class="text-3xl">&times;</button>
+        </div>
+        <div class="space-y-6 text-gray-300 text-sm leading-relaxed">
+            <section>
+                <h3 class="text-white font-bold mb-2">🛡️ İstifadə Qaydaları</h3>
+                <p>OkoTok platforması elanların sürətli və video formatda təqdimatı üçündür. Yerləşdirilən videoların məzmununa görə istifadəçi şəxsən məsuliyyət daşıyır.</p>
+            </section>
+            <section>
+                <h3 class="text-white font-bold mb-2">👤 Məxfilik və Təhlükəsizlik</h3>
+                <p>Şəxsi məlumatlarınız (mobil nömrə) yalnız alıcıların sizinlə əlaqə saxlaması üçün göstərilir. Heç bir məlumatınız kənar şəxslərə satılmır.</p>
+            </section>
+            <section>
+                <h3 class="text-white font-bold mb-2">⚖️ Hüquqi Xəbərdarlıq</h3>
+                <p>Satılan məhsulların keyfiyyəti və alqı-satqı prosesi zamanı yaranan hallara görə platforma rəhbərliyi məsuliyyət daşımır.</p>
+            </section>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal text-center">
+        <div class="mt-20">
+            <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-plus text-3xl text-black"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Elan Yerləşdir</h2>
+            <p class="text-gray-400 mb-8 px-4 text-sm">Elan yerləşdirmək, öz profilinizə baxmaq və xidmətlərdən tam yararlanmaq üçün rəsmi Telegram botumuzda qeydiyyatdan keçməlisiniz.</p>
+            <a href="https://t.me/OkoTokBot" target="_blank" class="bg-yellow-500 text-black px-10 py-4 rounded-full font-bold text-lg inline-block shadow-lg">BOTA KEÇİD ET</a>
+            <button onclick="closeModal('uploadModal')" class="block w-full mt-8 text-gray-500 underline">Geri qayıt</button>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-home" onclick="showMainGrid()"><i class="fas fa-home text-2xl"></i><span>Əsas</span></div>
+        <div class="nav-item" onclick="toggleSearch()"><i class="fas fa-search text-2xl"></i><span>Axtar</span></div>
+        <div onclick="openModal('uploadModal')" class="bg-white w-12 h-9 rounded-lg flex items-center justify-center text-black text-xl font-bold shadow-white/20 shadow-lg"><i class="fas fa-plus"></i></div>
+        <div class="nav-item" id="nav-fav" onclick="showFavorites()"><i class="fas fa-heart text-2xl"></i><span>Sevimlilər</span></div>
+        <div class="nav-item" onclick="openModal('uploadModal')"><i class="fas fa-user text-2xl"></i><span>Profil</span></div>
+    </div>
 
     <script>
-        // 1. SHORTS VİDEOLARI (10 ƏDƏD)
-        const vIds = ["mK-0O8T9m_o", "p_Yp_S6M9S0", "3JZ_D3ELwOQ", "l_S-b2aL_H8", "X_Y_Z12345", "5JZ_D3ELwOQ", "dQw4w9WgXcQ", "7JZ_D3ELwOQ", "8JZ_D3ELwOQ", "9JZ_D3ELwOQ"];
-        const container = document.getElementById('shorts-container');
-        vIds.forEach(id => {
-            container.innerHTML += `
-                <div class="short-video">
-                    <iframe src="https://www.youtube.com/embed/${id}?autoplay=0&controls=0&loop=1&playlist=${id}&modestbranding=1"></iframe>
-                    <div class="short-overlay"><h4>@User: Bu möhtəşəmdir! 🔥</h4></div>
-                </div>`;
-        });
+        // Supabase Bağlantısı
+        const S_URL = "SƏNİN_PROJECT_URL"; 
+        const S_KEY = "SƏNİN_ANON_KEY";
 
-        // 2. SADƏ ID SİSTEMİ (6 Rəqəmli)
-        const simpleId = Math.floor(100000 + Math.random() * 900000).toString();
-        const peer = new Peer(simpleId);
-        peer.on('open', id => document.getElementById('my-id').innerText = id);
+        let allAds = [];
+        let filteredAds = [];
+        let favorites = JSON.parse(localStorage.getItem('okotok_favs')) || [];
 
-        // 3. SƏS SİSTEMİ
-        let myStream;
-        async function toggleMic() {
-            if (!myStream) {
-                myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                document.getElementById('mic-btn').style.background = "green";
-                document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone"></i> Mikrofon Açıq';
+        // Bazadan Məlumatları Çək
+        async function fetchData() {
+            try {
+                const res = await fetch(`${S_URL}/rest/v1/elanlar?select=*&order=created_at.desc`, {
+                    headers: { "apikey": S_KEY, "Authorization": `Bearer ${S_KEY}` }
+                });
+                allAds = await res.json();
+                filteredAds = [...allAds];
+                showMainGrid();
+            } catch (e) { console.error("Xəta:", e); }
+        }
+
+        // Ana Səhifə (Grid Rejimi)
+        function showMainGrid() {
+            hideAll();
+            updateNav('nav-home');
+            document.getElementById('gridView').style.display = 'grid';
+            renderThumbnails('gridView', allAds);
+        }
+
+        // Sevimlilər Səhifəsi
+        function showFavorites() {
+            hideAll();
+            updateNav('nav-fav');
+            document.getElementById('favView').style.display = 'grid';
+            const favAds = allAds.filter(ad => favorites.includes(ad.id));
+            if (favAds.length === 0) {
+                document.getElementById('favView').innerHTML = '<div class="col-span-3 text-center py-40 text-gray-500">Sevimlilər boşdur</div>';
+            } else {
+                renderThumbnails('favView', favAds);
             }
         }
 
-        function callFriend() {
-            const fId = document.getElementById('friend-id').value;
-            const call = peer.call(fId, myStream);
-            call.on('stream', stream => { playStream(stream); });
+        // Axtarış Məntiqi
+        function handleSearch(query) {
+            const term = query.toLowerCase();
+            filteredAds = allAds.filter(ad => 
+                ad.marka.toLowerCase().includes(term) || 
+                ad.model.toLowerCase().includes(term) || 
+                ad.description.toLowerCase().includes(term)
+            );
+            document.getElementById('gridView').style.display = 'grid';
+            renderThumbnails('gridView', filteredAds);
         }
 
-        peer.on('call', call => {
-            call.answer(myStream);
-            call.on('stream', stream => { playStream(stream); });
-        });
-
-        function playStream(stream) {
-            let audio = new Audio();
-            audio.srcObject = stream;
-            audio.play();
+        function toggleSearch() {
+            const box = document.getElementById('searchBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+            if (box.style.display === 'block') document.getElementById('searchInput').focus();
         }
 
-        // 4. OYUNU DAXİLDƏ AÇMAQ (Səs kəsilməsin deyə)
-        function playGame(url) {
-            document.getElementById('game-frame').src = url;
-            document.getElementById('game-modal').style.display = 'block';
-        }
-        function closeGame() {
-            document.getElementById('game-modal').style.display = 'none';
-            document.getElementById('game-frame').src = '';
+        // Thumbnail-ləri Ekrana Çıxar
+        function renderThumbnails(elementId, dataList) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = dataList.map((ad) => `
+                <div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">
+                    <video src="${ad.media_url}" muted playsinline></video>
+                    <div class="grid-price">${ad.price} AZN</div>
+                </div>
+            `).join('');
         }
 
-        function showPage(id, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(id).classList.add('active-page');
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
+        // TikTok Feed Rejiminə Keçid
+        function startFeed(adId, fromContext) {
+            hideAll();
+            const feed = document.getElementById('feedView');
+            feed.style.display = 'block';
+            
+            // Hansı siyahıdan gəldiyini təyin et (Axtarış, Əsas və ya Sevimlilər)
+            let currentList = allAds;
+            if (fromContext === 'favView') currentList = allAds.filter(ad => favorites.includes(ad.id));
+            if (fromContext === 'gridView' && filteredAds.length < allAds.length) currentList = filteredAds;
+
+            feed.innerHTML = currentList.map(ad => `
+                <div class="snap-section" id="sec-${ad.id}">
+                    <div class="watermark">OKOTOK</div>
+                    <video src="${ad.media_url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>
+                    <div class="overlay"></div>
+                    <div class="side-bar">
+                        <button onclick="toggleFav('${ad.id}')" class="action-btn ${favorites.includes(ad.id) ? 'text-red-500' : 'text-white'}">
+                            <i class="fas fa-heart text-2xl"></i><span>${favorites.includes(ad.id) ? 'Bəyənildi' : 'Sev'}</span>
+                        </button>
+                        <a href="https://wa.me/${ad.whatsapp}" class="action-btn text-green-500"><i class="fab fa-whatsapp text-2xl"></i><span>WP</span></a>
+                        <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone text-2xl"></i><span>Zəng</span></a>
+                        <button onclick="shareAd('${ad.id}')" class="action-btn text-white"><i class="fas fa-share text-2xl"></i><span>Paylaş</span></button>
+                    </div>
+                    <div class="absolute bottom-[100px] left-4 right-20 pointer-events-none z-50">
+                        <div class="text-yellow-500 font-bold text-2xl mb-1 drop-shadow-lg">${ad.price} AZN</div>
+                        <div class="font-bold text-lg text-white">${ad.marka} ${ad.model}</div>
+                        <div class="text-gray-200 text-xs mt-1 line-clamp-2 bg-black/20 p-1 rounded">${ad.description}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById(`sec-${adId}`).scrollIntoView();
+            playCurrentVideo();
         }
+
+        // Sevimlilərə Əlavə Etmə/Silmə
+        function toggleFav(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(f => f !== id);
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('okotok_favs', JSON.stringify(favorites));
+            
+            // Düymə rəngini dərhal dəyiş
+            const sec = document.getElementById(`sec-${id}`);
+            if (sec) {
+                const btn = sec.querySelector('.fa-heart').parentElement;
+                btn.className = `action-btn ${favorites.includes(id) ? 'text-red-500' : 'text-white'}`;
+                btn.querySelector('span').innerText = favorites.includes(id) ? 'Bəyənildi' : 'Sev';
+            }
+        }
+
+        // Video İdarəetməsi
+        function handleScroll() { playCurrentVideo(); }
+        
+        function playCurrentVideo() {
+            const feed = document.getElementById('feedView');
+            const index = Math.round(feed.scrollTop / window.innerHeight);
+            const videos = feed.querySelectorAll('video');
+            videos.forEach((v, i) => {
+                if(i === index) {
+                    v.play().catch(() => { v.muted = true; v.play(); });
+                } else {
+                    v.pause();
+                    v.currentTime = 0;
+                }
+            });
+        }
+
+        function hideAll() {
+            ['gridView', 'favView', 'feedView', 'searchBox'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
+        }
+
+        function updateNav(activeId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function shareAd(id) { 
+            const url = window.location.href;
+            if (navigator.share) navigator.share({title: 'OkoTok Elan', url: url});
+            else { navigator.clipboard.writeText(url); alert('Link kopyalandı!'); }
+        }
+
+        window.onload = fetchData;
     </script>
 </body>
 </html>
