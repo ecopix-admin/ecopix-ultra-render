@@ -1,270 +1,46 @@
 <!DOCTYPE html>
-<html lang="az">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OkoTok - Video Bazar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        /* Grid Görünüşü (3-lü cərgə) */
-        #gridView, #favView, #searchResultView { 
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; 
-            height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; 
-        }
-        .grid-item { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; border-radius: 4px; overflow: hidden; }
-        .grid-item video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        .grid-price { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #fbbf24; }
-
-        /* TikTok Feed (Tam Ekran) */
-        #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        #feedView::-webkit-scrollbar { display: none; }
-        .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
-        .snap-section video { width: 100%; height: 100%; object-fit: contain; }
-        
-        /* İnterfeys Elementləri */
-        .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%); pointer-events: none; }
-        .side-bar { position: absolute; right: 12px; bottom: 140px; display: flex; flex-direction: column; gap: 18px; z-index: 50; }
-        .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        .action-btn span { font-size: 10px; margin-top: 2px; }
-
-        /* Naviqasiya Paneli */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 10px; cursor: pointer; }
-        .nav-item.active { color: white; }
-
-        /* Axtarış Paneli */
-        .search-container { position: fixed; top: 70px; left: 0; width: 100%; padding: 10px 15px; z-index: 110; display: none; background: black; }
-        .search-input { width: 100%; background: #222; border: 1px solid #333; border-radius: 10px; padding: 10px 15px; color: white; outline: none; }
-
-        /* Modallar */
-        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 200; padding: 30px; overflow-y: auto; }
-        .watermark { position: absolute; top: 75px; left: 20px; opacity: 0.3; font-weight: 900; pointer-events: none; z-index: 60; color: white; font-size: 18px; }
-    </style>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>GÖREN GÖZ - LIVE WEB AR</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
 </head>
-<body>
 
-    <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[120] bg-gradient-to-b from-black to-transparent">
-        <h1 class="text-2xl font-black italic tracking-tighter" onclick="showMainGrid()">OKOTOK</h1>
-        <div class="flex gap-4 items-center">
-            <button onclick="toggleSearch()" class="text-xl"><i class="fas fa-search"></i></button>
-            <button onclick="showMainGrid()" class="text-xl"><i class="fas fa-th-large"></i></button>
-            <button onclick="openModal('menuModal')" class="text-xl"><i class="fas fa-ellipsis-v"></i></button>
-        </div>
-    </div>
+<body style="margin: 0; overflow: hidden;">
+    <a-scene 
+        vr-mode-ui="enabled: false"
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false;">
 
-    <div id="searchBox" class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Marka, model və ya mövzu axtar..." oninput="handleSearch(this.value)">
-    </div>
+        <a-camera gps-camera="minDistance: 5;" rotation-reader></a-camera>
 
-    <div id="gridView"></div>
-    <div id="favView" style="display:none;"></div>
-    <div id="feedView" onscroll="handleScroll()"></div>
+        <a-entity 
+            gps-entity-place="latitude: 40.350554; longitude: 49.965319;" 
+            scale="15 15 15" 
+            look-at="[gps-camera]">
+            
+            <a-plane color="#1a1a1a" width="4" height="3" opacity="0.9"></a-plane>
 
-    <div id="menuModal" class="modal">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold text-yellow-500">OkoTok Məlumat</h2>
-            <button onclick="closeModal('menuModal')" class="text-3xl">&times;</button>
-        </div>
-        <div class="space-y-6 text-gray-300 text-sm leading-relaxed">
-            <section>
-                <h3 class="text-white font-bold mb-2">🛡️ İstifadə Qaydaları</h3>
-                <p>OkoTok platforması elanların sürətli və video formatda təqdimatı üçündür. Yerləşdirilən videoların məzmununa görə istifadəçi şəxsən məsuliyyət daşıyır.</p>
-            </section>
-            <section>
-                <h3 class="text-white font-bold mb-2">👤 Məxfilik və Təhlükəsizlik</h3>
-                <p>Şəxsi məlumatlarınız (mobil nömrə) yalnız alıcıların sizinlə əlaqə saxlaması üçün göstərilir. Heç bir məlumatınız kənar şəxslərə satılmır.</p>
-            </section>
-            <section>
-                <h3 class="text-white font-bold mb-2">⚖️ Hüquqi Xəbərdarlıq</h3>
-                <p>Satılan məhsulların keyfiyyəti və alqı-satqı prosesi zamanı yaranan hallara görə platforma rəhbərliyi məsuliyyət daşımır.</p>
-            </section>
-        </div>
-    </div>
+            <a-text value="CANLI KRIPTO BIRJASI" align="center" position="0 1.2 0.1" width="4" color="#00ff00"></a-text>
 
-    <div id="uploadModal" class="modal text-center">
-        <div class="mt-20">
-            <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-plus text-3xl text-black"></i>
-            </div>
-            <h2 class="text-2xl font-bold mb-4">Elan Yerləşdir</h2>
-            <p class="text-gray-400 mb-8 px-4 text-sm">Elan yerləşdirmək, öz profilinizə baxmaq və xidmətlərdən tam yararlanmaq üçün rəsmi Telegram botumuzda qeydiyyatdan keçməlisiniz.</p>
-            <a href="https://t.me/OkoTokBot" target="_blank" class="bg-yellow-500 text-black px-10 py-4 rounded-full font-bold text-lg inline-block shadow-lg">BOTA KEÇİD ET</a>
-            <button onclick="closeModal('uploadModal')" class="block w-full mt-8 text-gray-500 underline">Geri qayıt</button>
-        </div>
-    </div>
+            <a-box position="0 0 0.1" width="2.5" height="0.8" color="#ff0050" 
+                   class="clickable" 
+                   onclick="window.location.href='https://www.coingecko.com/en/coins/bitcoin'">
+                <a-text value="BITCOIN QIYMETINE BAX" align="center" position="0 0 0.55" width="3.5" color="#fff"></a-text>
+            </a-box>
 
-    <div class="nav-bar">
-        <div class="nav-item active" id="nav-home" onclick="showMainGrid()"><i class="fas fa-home text-2xl"></i><span>Əsas</span></div>
-        <div class="nav-item" onclick="toggleSearch()"><i class="fas fa-search text-2xl"></i><span>Axtar</span></div>
-        <div onclick="openModal('uploadModal')" class="bg-white w-12 h-9 rounded-lg flex items-center justify-center text-black text-xl font-bold shadow-white/20 shadow-lg"><i class="fas fa-plus"></i></div>
-        <div class="nav-item" id="nav-fav" onclick="showFavorites()"><i class="fas fa-heart text-2xl"></i><span>Sevimlilər</span></div>
-        <div class="nav-item" onclick="openModal('uploadModal')"><i class="fas fa-user text-2xl"></i><span>Profil</span></div>
-    </div>
+            <a-text value="Bu panel havada canli internet portalidir" align="center" position="0 -1.2 0.1" width="2.5" color="#bbb"></a-text>
+        </a-entity>
+
+    </a-scene>
 
     <script>
-        // Supabase Bağlantısı
-        const S_URL = "SƏNİN_PROJECT_URL"; 
-        const S_KEY = "SƏNİN_ANON_KEY";
-
-        let allAds = [];
-        let filteredAds = [];
-        let favorites = JSON.parse(localStorage.getItem('okotok_favs')) || [];
-
-        // Bazadan Məlumatları Çək
-        async function fetchData() {
-            try {
-                const res = await fetch(`${S_URL}/rest/v1/elanlar?select=*&order=created_at.desc`, {
-                    headers: { "apikey": S_KEY, "Authorization": `Bearer ${S_KEY}` }
-                });
-                allAds = await res.json();
-                filteredAds = [...allAds];
-                showMainGrid();
-            } catch (e) { console.error("Xəta:", e); }
-        }
-
-        // Ana Səhifə (Grid Rejimi)
-        function showMainGrid() {
-            hideAll();
-            updateNav('nav-home');
-            document.getElementById('gridView').style.display = 'grid';
-            renderThumbnails('gridView', allAds);
-        }
-
-        // Sevimlilər Səhifəsi
-        function showFavorites() {
-            hideAll();
-            updateNav('nav-fav');
-            document.getElementById('favView').style.display = 'grid';
-            const favAds = allAds.filter(ad => favorites.includes(ad.id));
-            if (favAds.length === 0) {
-                document.getElementById('favView').innerHTML = '<div class="col-span-3 text-center py-40 text-gray-500">Sevimlilər boşdur</div>';
-            } else {
-                renderThumbnails('favView', favAds);
-            }
-        }
-
-        // Axtarış Məntiqi
-        function handleSearch(query) {
-            const term = query.toLowerCase();
-            filteredAds = allAds.filter(ad => 
-                ad.marka.toLowerCase().includes(term) || 
-                ad.model.toLowerCase().includes(term) || 
-                ad.description.toLowerCase().includes(term)
-            );
-            document.getElementById('gridView').style.display = 'grid';
-            renderThumbnails('gridView', filteredAds);
-        }
-
-        function toggleSearch() {
-            const box = document.getElementById('searchBox');
-            box.style.display = box.style.display === 'block' ? 'none' : 'block';
-            if (box.style.display === 'block') document.getElementById('searchInput').focus();
-        }
-
-        // Thumbnail-ləri Ekrana Çıxar
-        function renderThumbnails(elementId, dataList) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = dataList.map((ad) => `
-                <div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">
-                    <video src="${ad.media_url}" muted playsinline></video>
-                    <div class="grid-price">${ad.price} AZN</div>
-                </div>
-            `).join('');
-        }
-
-        // TikTok Feed Rejiminə Keçid
-        function startFeed(adId, fromContext) {
-            hideAll();
-            const feed = document.getElementById('feedView');
-            feed.style.display = 'block';
-            
-            // Hansı siyahıdan gəldiyini təyin et (Axtarış, Əsas və ya Sevimlilər)
-            let currentList = allAds;
-            if (fromContext === 'favView') currentList = allAds.filter(ad => favorites.includes(ad.id));
-            if (fromContext === 'gridView' && filteredAds.length < allAds.length) currentList = filteredAds;
-
-            feed.innerHTML = currentList.map(ad => `
-                <div class="snap-section" id="sec-${ad.id}">
-                    <div class="watermark">OKOTOK</div>
-                    <video src="${ad.media_url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>
-                    <div class="overlay"></div>
-                    <div class="side-bar">
-                        <button onclick="toggleFav('${ad.id}')" class="action-btn ${favorites.includes(ad.id) ? 'text-red-500' : 'text-white'}">
-                            <i class="fas fa-heart text-2xl"></i><span>${favorites.includes(ad.id) ? 'Bəyənildi' : 'Sev'}</span>
-                        </button>
-                        <a href="https://wa.me/${ad.whatsapp}" class="action-btn text-green-500"><i class="fab fa-whatsapp text-2xl"></i><span>WP</span></a>
-                        <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone text-2xl"></i><span>Zəng</span></a>
-                        <button onclick="shareAd('${ad.id}')" class="action-btn text-white"><i class="fas fa-share text-2xl"></i><span>Paylaş</span></button>
-                    </div>
-                    <div class="absolute bottom-[100px] left-4 right-20 pointer-events-none z-50">
-                        <div class="text-yellow-500 font-bold text-2xl mb-1 drop-shadow-lg">${ad.price} AZN</div>
-                        <div class="font-bold text-lg text-white">${ad.marka} ${ad.model}</div>
-                        <div class="text-gray-200 text-xs mt-1 line-clamp-2 bg-black/20 p-1 rounded">${ad.description}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById(`sec-${adId}`).scrollIntoView();
-            playCurrentVideo();
-        }
-
-        // Sevimlilərə Əlavə Etmə/Silmə
-        function toggleFav(id) {
-            if (favorites.includes(id)) {
-                favorites = favorites.filter(f => f !== id);
-            } else {
-                favorites.push(id);
-            }
-            localStorage.setItem('okotok_favs', JSON.stringify(favorites));
-            
-            // Düymə rəngini dərhal dəyiş
-            const sec = document.getElementById(`sec-${id}`);
-            if (sec) {
-                const btn = sec.querySelector('.fa-heart').parentElement;
-                btn.className = `action-btn ${favorites.includes(id) ? 'text-red-500' : 'text-white'}`;
-                btn.querySelector('span').innerText = favorites.includes(id) ? 'Bəyənildi' : 'Sev';
-            }
-        }
-
-        // Video İdarəetməsi
-        function handleScroll() { playCurrentVideo(); }
-        
-        function playCurrentVideo() {
-            const feed = document.getElementById('feedView');
-            const index = Math.round(feed.scrollTop / window.innerHeight);
-            const videos = feed.querySelectorAll('video');
-            videos.forEach((v, i) => {
-                if(i === index) {
-                    v.play().catch(() => { v.muted = true; v.play(); });
-                } else {
-                    v.pause();
-                    v.currentTime = 0;
-                }
-            });
-        }
-
-        function hideAll() {
-            ['gridView', 'favView', 'feedView', 'searchBox'].forEach(id => document.getElementById(id).style.display = 'none');
-            document.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
-        }
-
-        function updateNav(activeId) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(activeId).classList.add('active');
-        }
-
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function shareAd(id) { 
-            const url = window.location.href;
-            if (navigator.share) navigator.share({title: 'OkoTok Elan', url: url});
-            else { navigator.clipboard.writeText(url); alert('Link kopyalandı!'); }
-        }
-
-        window.onload = fetchData;
+        // Toxunuşu qeydə almaq üçün
+        window.addEventListener('click', function () {
+            // AR obyektinə klikləyəndə sayta yönləndirmə funksiyası burada aktivləşir
+        });
     </script>
 </body>
 </html>
