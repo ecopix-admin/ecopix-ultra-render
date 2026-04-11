@@ -3,12 +3,31 @@
 <head>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <title>GÖREN GÖZ - LIVE WEB AR</title>
+    <title>GÖREN GÖZ - WEB PORTAL</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <style>
+        /* Avtomatik açılan tam ekran pəncərəsi */
+        #web-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 10000; flex-direction: column;
+        }
+        #web-frame { flex-grow: 1; border: none; width: 100%; }
+        #top-bar { background: #333; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-close { background: #ff0050; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+
+    <div id="web-overlay">
+        <div id="top-bar">
+            <span>Canlı Portal: CoinGecko</span>
+            <button class="btn-close" onclick="closePortal()">Bağla</button>
+        </div>
+        <iframe id="web-frame" src=""></iframe>
+    </div>
+
     <a-scene 
         vr-mode-ui="enabled: false"
         embedded 
@@ -17,30 +36,50 @@
         <a-camera gps-camera="minDistance: 5;" rotation-reader></a-camera>
 
         <a-entity 
+            id="internet-portal"
             gps-entity-place="latitude: 40.350554; longitude: 49.965319;" 
             scale="15 15 15" 
             look-at="[gps-camera]">
             
-            <a-plane color="#1a1a1a" width="4" height="3" opacity="0.9"></a-plane>
+            <a-plane color="#121212" width="4" height="3" opacity="0.95"></a-plane>
 
-            <a-text value="CANLI KRIPTO BIRJASI" align="center" position="0 1.2 0.1" width="4" color="#00ff00"></a-text>
+            <a-text value="BITCOIN LIVE PRICE" align="center" position="0 1.1 0.1" width="4.5" color="#00ff00"></a-text>
+            <a-text value="Interaktiv portal ucun\nekrana toxunun" align="center" position="0 0.4 0.1" width="3" color="#ffffff"></a-text>
 
-            <a-box position="0 0 0.1" width="2.5" height="0.8" color="#ff0050" 
-                   class="clickable" 
-                   onclick="window.location.href='https://www.coingecko.com/en/coins/bitcoin'">
-                <a-text value="BITCOIN QIYMETINE BAX" align="center" position="0 0 0.55" width="3.5" color="#fff"></a-text>
-            </a-box>
+            <a-box position="0 -0.8 0.1" width="2" height="0.6" depth="0.1" color="#ff0050"></a-box>
+            <a-text value="SAYTI AC" align="center" position="0 -0.8 0.2" width="4" color="#fff"></a-text>
 
-            <a-text value="Bu panel havada canli internet portalidir" align="center" position="0 -1.2 0.1" width="2.5" color="#bbb"></a-text>
         </a-entity>
 
     </a-scene>
 
     <script>
-        // Toxunuşu qeydə almaq üçün
-        window.addEventListener('click', function () {
-            // AR obyektinə klikləyəndə sayta yönləndirmə funksiyası burada aktivləşir
+        const overlay = document.getElementById('web-overlay');
+        const frame = document.getElementById('web-frame');
+
+        // Ekrana hər hansı bir yerdə toxunanda saytı aç (İnqilab budur!)
+        window.addEventListener('click', function() {
+            openPortal('https://www.coingecko.com/en/coins/bitcoin');
         });
+
+        function openPortal(url) {
+            frame.src = url;
+            overlay.style.display = 'flex';
+        }
+
+        function closePortal() {
+            overlay.style.display = 'none';
+            frame.src = "";
+        }
+
+        // Məsafəyə görə avtomatik açılma (Opsionel)
+        setInterval(() => {
+            const portal = document.querySelector('#internet-portal');
+            const dist = portal.getAttribute('distance');
+            if (dist && dist < 10 && overlay.style.display !== 'flex') {
+                openPortal('https://www.coingecko.com/en/coins/bitcoin');
+            }
+        }, 2000);
     </script>
 </body>
 </html>
